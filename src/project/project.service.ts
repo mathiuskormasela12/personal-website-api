@@ -56,7 +56,7 @@ export class ProjectService {
 				}
 
 				try {
-					await this.projectsRepository.create({
+					const results = await this.projectsRepository.create({
 						title: dto.title,
 						description: dto.description,
 						img,
@@ -64,7 +64,7 @@ export class ProjectService {
 
 					const technologies = dto.technologies.split(',');
 					const technologiesData = technologies.map((item) => ({
-						projectId: req.app.locals.decode.id,
+						projectId: results.id,
 						name: item.trim(),
 					}));
 
