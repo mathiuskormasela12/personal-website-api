@@ -6,7 +6,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { IJwtToken } from 'src/interfaces';
 import { ResponseService } from 'src/response/response.service';
-import { TokenType } from 'src/types';
 import { User } from 'src/user/user.entity';
 import { CreateAccessTokenDto, LoginDto, RegisterDto } from './dto';
 
@@ -152,10 +151,7 @@ export class AuthService {
 		@Body() dto: CreateAccessTokenDto,
 	) {
 		try {
-			const decode: IJwtToken = await this.verifyToken(
-				dto.refreshToken,
-				'REFRESH TOKEN',
-			);
+			const decode: IJwtToken = await this.verifyToken(dto.refreshToken);
 			const data: IJwtToken = {
 				id: decode.id,
 				email: decode.email,
@@ -231,18 +227,10 @@ export class AuthService {
 		return await this.jwtService.sign(data, { expiresIn, secret });
 	}
 
-	public async verifyToken(
-		token: string,
-		tokenType: TokenType,
-	): Promise<IJwtToken> {
-		const accessTokenSecret: string = this.configService.get(
-			'JWT_ACCESS_TOKEN_SECRET_KEY',
-		);
-		const refreshTokenSecretKey: string = this.configService.get(
+	public async verifyToken(token: string): Promise<IJwtToken> {
+		const secret: string = this.configService.get(
 			'JWT_REFRESH_TOKEN_SECRET_KEY',
 		);
-		const secret =
-			tokenType === 'ACCESS TOKEN' ? accessTokenSecret : refreshTokenSecretKey;
 
 		return await this.jwtService.verify(token, { secret });
 	}
