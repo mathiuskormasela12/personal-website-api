@@ -7,8 +7,12 @@ import {
 	Patch,
 	Delete,
 	UseGuards,
+	Body,
+	Request,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
+import { CreateProjectDto } from './dto';
 import { ProjectService } from './project.service';
 
 @Controller('api/v1')
@@ -17,8 +21,11 @@ export class ProjectController {
 
 	@Post('project')
 	@UseGuards(AuthGuard)
-	public createProject() {
-		return this.projectService.createProject();
+	public createProject(
+		@Request() req: IRequestWithUploadAndAppLocals,
+		@Body() dto: CreateProjectDto,
+	) {
+		return this.projectService.createProject(req, dto);
 	}
 
 	@Get('projects')

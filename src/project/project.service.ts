@@ -1,18 +1,128 @@
 // ========== Project Service
 // import all modules
-import { Injectable } from '@nestjs/common';
+import { Body, Inject, Injectable, Request, HttpStatus } from '@nestjs/common';
+import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
 import { ResponseService } from 'src/response/response.service';
+import { TechnologiesService } from 'src/technologies/technologies.service';
+import { UploadService } from 'src/upload/upload.service';
+import { CreateProjectDto } from './dto';
+import { Project } from './project.entity';
 
 @Injectable()
 export class ProjectService {
-	constructor(private readonly responseService: ResponseService) {}
+	constructor(
+		private readonly responseService: ResponseService,
+		private readonly uploadService: UploadService,
+		private readonly technologiesService: TechnologiesService,
+		@Inject('PROJECTS_REPOSITORY')
+		private readonly projectsRepository: typeof Project,
+	) {}
 
-	public createProject() {
-		throw this.responseService.response({
-			status: 200,
-			success: true,
-			message: 'This is a create project API',
-		});
+	public async createProject(
+		@Request() req: IRequestWithUploadAndAppLocals,
+		@Body() dto: CreateProjectDto,
+	) {
+		try {
+			const isExists = await this.projectsRepository.findOne({
+				where: {
+					title: dto.title,
+				},
+			});
+
+			if (isExists) {
+				throw this.responseService.responseGenerator(
+					req,
+					HttpStatus.BAD_REQUEST,
+					false,
+					'The project already exists',
+				);
+			}
+
+			try {
+				const {
+					success,
+					img = null,
+					message,
+					status,
+				} = await this.uploadService.uploadImage(req);
+
+				if (!success) {
+					throw this.responseService.responseGenerator(
+						req,
+						status,
+						false,
+						message,
+					);
+				}
+
+				try {
+					await this.projectsRepository.create({
+						title: dto.title,
+						description: dto.description,
+						img,
+					});
+
+					const technologies = dto.technologies.split(',');
+					const technologiesData = technologies.map((item) => ({
+						projectId: req.app.locals.decode.id,
+						name: item.trim(),
+					}));
+
+					try {
+						await this.technologiesService.createTechnologies(technologiesData);
+						throw this.responseService.responseGenerator(
+							req,
+							HttpStatus.CREATED,
+							true,
+							'The project has been inserted',
+						);
+					} catch (err) {
+						if (err instanceof Error) {
+							throw this.responseService.responseGenerator(
+								req,
+								HttpStatus.BAD_REQUEST,
+								false,
+								err.message,
+							);
+						} else {
+							throw err;
+						}
+					}
+				} catch (err) {
+					if (err instanceof Error) {
+						throw this.responseService.responseGenerator(
+							req,
+							HttpStatus.BAD_REQUEST,
+							false,
+							err.message,
+						);
+					} else {
+						throw err;
+					}
+				}
+			} catch (err) {
+				if (err instanceof Error) {
+					throw this.responseService.responseGenerator(
+						req,
+						HttpStatus.BAD_REQUEST,
+						false,
+						err.message,
+					);
+				} else {
+					throw err;
+				}
+			}
+		} catch (err) {
+			if (err instanceof Error) {
+				throw this.responseService.response({
+					status: HttpStatus.BAD_REQUEST,
+					success: false,
+					message: err.message,
+				});
+			} else {
+				throw this.responseService.response(err);
+			}
+		}
 	}
 
 	public getAllProjects() {

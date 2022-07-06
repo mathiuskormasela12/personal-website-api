@@ -11,6 +11,7 @@ import { DatabaseModule } from './database/database.module';
 import { TechnologiesModule } from './technologies/technologies.module';
 import { ProjectModule } from './project/project.module';
 import { UserModule } from './user/user.module';
+import { UploadModule } from './upload/upload.module';
 
 const { EMAIL, EMAIL_PASSWORD, EMAIL_HOST } = process.env;
 
@@ -23,7 +24,7 @@ const { EMAIL, EMAIL_PASSWORD, EMAIL_HOST } = process.env;
 
 		// Setup for serving static files
 		ServeStaticModule.forRoot({
-			rootPath: join(__dirname, '../public'),
+			rootPath: join(__dirname, '../uploads'),
 		}),
 
 		// Setup for node mailer
@@ -33,8 +34,9 @@ const { EMAIL, EMAIL_PASSWORD, EMAIL_HOST } = process.env;
 
 		AuthModule,
 		UserModule,
-		TechnologiesModule,
 		ProjectModule,
+		TechnologiesModule,
+		UploadModule,
 		ResponseModule,
 		DatabaseModule,
 	],
