@@ -6,8 +6,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { IJwtToken } from 'src/interfaces';
 import { ResponseService } from 'src/response/response.service';
+import { TokenType } from 'src/types';
 import { User } from 'src/user/user.entity';
-import { LoginDto, RegisterDto } from './dto';
+import { CreateAccessTokenDto, LoginDto, RegisterDto } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -146,12 +147,66 @@ export class AuthService {
 		}
 	}
 
-	public createAccessTokenUsingRefreshToken() {
-		return this.responseService.response({
-			status: 200,
-			success: true,
-			message: 'Hi this is a creating access token API',
-		});
+	public async createAccessTokenUsingRefreshToken(
+		@Request() req: Request,
+		@Body() dto: CreateAccessTokenDto,
+	) {
+		try {
+			const decode: IJwtToken = await this.verifyToken(
+				dto.refreshToken,
+				'REFRESH TOKEN',
+			);
+			const data: IJwtToken = {
+				id: decode.id,
+				email: decode.email,
+			};
+			try {
+				const accessToken: string = await this.generateAccessToken(data);
+				try {
+					const refreshToken: string = await this.generateRefreshToken(data);
+
+					throw this.responseService.responseGenerator(
+						req,
+						HttpStatus.CREATED,
+						true,
+						'The access token has been created successfully',
+						{ accessToken, refreshToken },
+					);
+				} catch (err) {
+					if (err instanceof Error) {
+						throw this.responseService.responseGenerator(
+							req,
+							HttpStatus.BAD_REQUEST,
+							false,
+							err.message,
+						);
+					} else {
+						throw err;
+					}
+				}
+			} catch (err) {
+				if (err instanceof Error) {
+					throw this.responseService.responseGenerator(
+						req,
+						HttpStatus.BAD_REQUEST,
+						false,
+						err.message,
+					);
+				} else {
+					throw err;
+				}
+			}
+		} catch (err) {
+			if (err instanceof Error) {
+				throw this.responseService.response({
+					status: HttpStatus.BAD_REQUEST,
+					success: false,
+					message: err.message,
+				});
+			} else {
+				throw this.responseService.response(err);
+			}
+		}
 	}
 
 	public async generateAccessToken(data: IJwtToken): Promise<string> {
@@ -174,5 +229,21 @@ export class AuthService {
 		);
 
 		return await this.jwtService.sign(data, { expiresIn, secret });
+	}
+
+	public async verifyToken(
+		token: string,
+		tokenType: TokenType,
+	): Promise<IJwtToken> {
+		const accessTokenSecret: string = this.configService.get(
+			'JWT_ACCESS_TOKEN_SECRET_KEY',
+		);
+		const refreshTokenSecretKey: string = this.configService.get(
+			'JWT_REFRESH_TOKEN_SECRET_KEY',
+		);
+		const secret =
+			tokenType === 'ACCESS TOKEN' ? accessTokenSecret : refreshTokenSecretKey;
+
+		return await this.jwtService.verify(token, { secret });
 	}
 }

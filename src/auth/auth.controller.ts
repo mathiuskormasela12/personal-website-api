@@ -2,7 +2,7 @@
 // import all modules
 import { Body, Controller, Post, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './dto';
+import { CreateAccessTokenDto, LoginDto, RegisterDto } from './dto';
 
 @Controller('api/v1')
 export class AuthController {
@@ -19,7 +19,10 @@ export class AuthController {
 	}
 
 	@Post('/auth/acess-token')
-	public createAccessTokenUsingRefreshToken() {
-		return this.authService.createAccessTokenUsingRefreshToken();
+	public createAccessTokenUsingRefreshToken(
+		@Request() req: Request,
+		@Body() dto: CreateAccessTokenDto,
+	) {
+		return this.authService.createAccessTokenUsingRefreshToken(req, dto);
 	}
 }
