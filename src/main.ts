@@ -1,6 +1,6 @@
 // ========== Main
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import * as compression from 'compression';
 import helmet from 'helmet';
 import * as morgan from 'morgan';
@@ -23,6 +23,14 @@ async function bootstrap() {
 	app.enableCors({
 		origin: constants.WHITELIST,
 	});
+
+	// Setup for Validation Pipes
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			transform: true,
+		}),
+	);
 
 	// Middleware setup for uploading files
 	app.use(

@@ -1,24 +1,25 @@
 // ========== Auth Controller
 // import all modules
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { LoginDto, RegisterDto } from './dto';
 
 @Controller('api/v1')
 export class AuthController {
 	constructor(private authService: AuthService) {}
 
 	@Post('/auth/register')
-	public register() {
-		throw this.authService.register();
+	public register(@Request() req: Request, @Body() dto: RegisterDto) {
+		return this.authService.register(req, dto);
 	}
 
 	@Post('/auth/login')
-	public login() {
-		throw this.authService.login();
+	public login(@Request() req: Request, @Body() dto: LoginDto) {
+		return this.authService.login(req, dto);
 	}
 
 	@Post('/auth/acess-token')
 	public createAccessTokenUsingRefreshToken() {
-		throw this.authService.createAccessTokenUsingRefreshToken();
+		return this.authService.createAccessTokenUsingRefreshToken();
 	}
 }
