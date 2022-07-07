@@ -58,7 +58,9 @@ export class UserService {
 				{ id: isExists.id },
 				{ secret: this.configService.get('SECRET_KEY'), expiresIn: '15m' },
 			);
-			const link = `${this.configService.get('WEB_HOSTNAME')}/reset/${token}`;
+			const link = `${this.configService.get(
+				'WEB_HOSTNAME',
+			)}/forgot?token=${token}`;
 
 			try {
 				await this.nodemailerService.sendEmail(
