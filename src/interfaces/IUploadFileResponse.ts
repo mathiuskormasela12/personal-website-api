@@ -5,4 +5,5 @@ export interface IUploadFileResponse {
 	success: boolean;
 	message?: string;
 	img?: string;
+	cv?: string;
 }

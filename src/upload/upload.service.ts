@@ -58,4 +58,56 @@ export class UploadService {
 			img: fileName,
 		};
 	}
+
+	public uploadPdf(@Request() req: IRequestWithUpload): IUploadFileResponse {
+		if (!req.files) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				success: false,
+				message: 'The pdf is required',
+			};
+		}
+
+		const cv = req.files.cv;
+		const extValid = /pdf/;
+		const checkMimeType = extValid.test(cv.mimetype);
+		const checkExtension = extValid.test(cv.name);
+
+		if (!checkMimeType && !checkExtension) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				success: false,
+				message: "You can't upload file beside an pdf",
+			};
+		}
+
+		if (cv.size > 3000000) {
+			return {
+				status: HttpStatus.BAD_REQUEST,
+				success: false,
+				message: 'The pdf file is too large',
+			};
+		}
+
+		let fileName = cv.name.split('.')[0].toLowerCase();
+		const ext = cv.name.split('.').pop().toLowerCase();
+		fileName += '-';
+		fileName += String(Date.now());
+		fileName += '.';
+		fileName += ext;
+
+		const isUploadFolderExists = existsSync(join(__dirname, '../../uploads'));
+
+		if (!isUploadFolderExists) {
+			mkdirSync(join(__dirname, '../../uploads'));
+		}
+
+		cv.mv(join(__dirname, '../../uploads/' + fileName));
+
+		return {
+			status: HttpStatus.OK,
+			success: true,
+			cv: fileName,
+		};
+	}
 }

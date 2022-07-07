@@ -8,5 +8,11 @@ export interface IRequestWithUpload extends Request {
 			size: number;
 			mv: (path: string) => void;
 		};
+		cv?: {
+			name: string;
+			mimetype: string;
+			size: number;
+			mv: (path: string) => void;
+		};
 	};
 }
