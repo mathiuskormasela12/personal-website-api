@@ -12,6 +12,7 @@ import { TechnologiesModule } from './technologies/technologies.module';
 import { ProjectModule } from './project/project.module';
 import { UserModule } from './user/user.module';
 import { UploadModule } from './upload/upload.module';
+import { NodemailerModule } from './nodemailer/nodemailer.module';
 
 const { EMAIL, EMAIL_PASSWORD, EMAIL_HOST } = process.env;
 
@@ -29,7 +30,7 @@ const { EMAIL, EMAIL_PASSWORD, EMAIL_HOST } = process.env;
 
 		// Setup for node mailer
 		MailerModule.forRoot({
-			transport: `smtps://${EMAIL}:${EMAIL_PASSWORD}@${EMAIL_HOST}`,
+			transport: `smtp://${EMAIL}:${EMAIL_PASSWORD}@${EMAIL_HOST}`,
 		}),
 
 		AuthModule,
@@ -37,6 +38,7 @@ const { EMAIL, EMAIL_PASSWORD, EMAIL_HOST } = process.env;
 		ProjectModule,
 		TechnologiesModule,
 		UploadModule,
+		NodemailerModule,
 		ResponseModule,
 		DatabaseModule,
 	],

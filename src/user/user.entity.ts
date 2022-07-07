@@ -20,9 +20,6 @@ export class User extends Model {
 	@Column
 	cv: string;
 
-	@Column
-	otpCode: number;
-
 	@CreatedAt
 	createdAt: Date;
 

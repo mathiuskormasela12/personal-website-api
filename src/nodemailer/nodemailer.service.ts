@@ -5,11 +5,11 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class NodemailerService {
-	public sendOtpCode(
+	public sendEmail(
 		mailer: MailerService,
 		to: string,
 		from: string,
-		code: number,
+		link: string,
 	) {
 		const message = `
 			<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -189,7 +189,7 @@ export class NodemailerService {
 						<!-- Logo -->
 						<tr>
 							<td class="email-masthead">
-								<a class="email-masthead_name">Supichi</a>
+								<a class="email-masthead_name">Personal Website</a>
 							</td>
 						</tr>
 						<!-- Email Body -->
@@ -199,19 +199,19 @@ export class NodemailerService {
 									<!-- Body content -->
 									<tr>
 										<td class="content-cell">
-											<h1>Your OTP Code</h1>
-											<p>You can use the OTP Code for resetting your password</p>
+											<h1>Your Reset Password Link</h1>
+											<p>You can click this button to reset your password</p>
 											<!-- Action -->
 											<table class="body-action" align="center" width="100%" cellpadding="0" cellspacing="0">
 												<tr>
 													<td align="center">
 														<div>
-															<div class="button btn-primary" style="letter-spacing: 1px">${code}</div>
+															<a href="${link}" class="button btn-primary" style="letter-spacing: 1px; color: white;">Click Me</a>
 														</div>
 													</td>
 												</tr>
 											</table>
-											<p>Thanks,<br>The Supichi Team</p>
+											<p>Thanks,<br>Mathius</p>
 										</td>
 									</tr>
 								</table>
@@ -228,7 +228,7 @@ export class NodemailerService {
 		return mailer.sendMail({
 			to,
 			from,
-			subject: 'Your OTP Code',
+			subject: 'Reset Password Link',
 			html: message,
 		});
 	}

@@ -1,19 +1,8 @@
-// ========== Register Dto
+// ========== Reset Password Dto
 // import all modules
-import {
-	IsEmail,
-	IsNotEmpty,
-	IsString,
-	Matches,
-	MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 
-export class RegisterDto {
-	@IsEmail()
-	@IsString({ message: 'The email must be a string' })
-	@IsNotEmpty({ message: "The email can't be empty" })
-	email: string;
-
+export class ResetPasswordDto {
 	@MinLength(5, { message: 'The password is too short' })
 	@Matches(/([A-Z])/, { message: 'The password is too weak' })
 	@Matches(/([a-z])/, { message: 'The password is too weak' })
