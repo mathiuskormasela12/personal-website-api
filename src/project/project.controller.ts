@@ -9,10 +9,13 @@ import {
 	UseGuards,
 	Body,
 	Request,
+	Param,
+	ParseIntPipe,
+	Query,
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
-import { CreateProjectDto } from './dto';
+import { CreateProjectDto, GetAllProjectsDto } from './dto';
 import { ProjectService } from './project.service';
 
 @Controller('api/v1')
@@ -29,15 +32,19 @@ export class ProjectController {
 	}
 
 	@Get('projects')
-	@UseGuards(AuthGuard)
-	public getAllProjects() {
-		return this.projectService.getAllProjects();
+	public getAllProjects(
+		@Request() req: Request,
+		@Query() dto: GetAllProjectsDto,
+	) {
+		return this.projectService.getAllProjects(req, dto);
 	}
 
 	@Get('project/:id')
-	@UseGuards(AuthGuard)
-	public getProject() {
-		return this.projectService.getProject();
+	public getProject(
+		@Request() req: Request,
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.projectService.getProject(req, id);
 	}
 
 	@Patch('project/:id')
