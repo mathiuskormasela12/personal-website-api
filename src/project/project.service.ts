@@ -18,7 +18,7 @@ import { ResponseService } from 'src/response/response.service';
 import { TechnologiesService } from 'src/technologies/technologies.service';
 import { Technology } from 'src/technologies/technology.entity';
 import { UploadService } from 'src/upload/upload.service';
-import { CreateProjectDto, GetAllProjectsDto } from './dto';
+import { CreateOrUpdateProjectDto, GetAllProjectsDto } from './dto';
 import { Project } from './project.entity';
 
 @Injectable()
@@ -36,7 +36,7 @@ export class ProjectService {
 
 	public async createProject(
 		@Request() req: IRequestWithUploadAndAppLocals,
-		@Body() dto: CreateProjectDto,
+		@Body() dto: CreateOrUpdateProjectDto,
 	) {
 		try {
 			const isExists = await this.projectsRepository.findOne({
@@ -248,12 +248,194 @@ export class ProjectService {
 		}
 	}
 
-	public updateProject() {
-		throw this.responseService.response({
-			status: 200,
-			success: true,
-			message: 'This is a update project API',
-		});
+	public async updateProject(
+		@Request() req: IRequestWithUploadAndAppLocals,
+		@Body() dto: CreateOrUpdateProjectDto,
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		try {
+			const project = await this.projectsRepository.findByPk(id);
+
+			if (!project) {
+				throw this.responseService.responseGenerator(
+					req,
+					HttpStatus.NOT_FOUND,
+					false,
+					'The project is not found',
+				);
+			}
+
+			if (req.files) {
+				try {
+					const { success, img, message, status } =
+						await this.uploadService.uploadImage(req);
+
+					if (!success) {
+						throw this.responseService.responseGenerator(
+							req,
+							status,
+							false,
+							message,
+						);
+					}
+
+					const data = {
+						title: dto.title,
+						description: dto.description,
+						img,
+					};
+
+					try {
+						await this.projectsRepository.update(data, { where: { id } });
+						try {
+							await this.technologiesRepository.destroy({
+								where: { projectId: id },
+							});
+
+							unlinkSync(join(__dirname, '../../uploads/' + project.img));
+
+							const newTechnologies = dto.technologies
+								.split(',')
+								.map((item) => ({
+									name: item.trim(),
+									projectId: id,
+								}));
+
+							try {
+								await this.technologiesService.createTechnologies(
+									newTechnologies,
+								);
+								throw this.responseService.responseGenerator(
+									req,
+									HttpStatus.OK,
+									true,
+									'The project has been updated',
+								);
+							} catch (err) {
+								if (err instanceof Error) {
+									throw this.responseService.responseGenerator(
+										req,
+										HttpStatus.BAD_REQUEST,
+										false,
+										err.message,
+									);
+								} else {
+									throw err;
+								}
+							}
+						} catch (err) {
+							if (err instanceof Error) {
+								throw this.responseService.responseGenerator(
+									req,
+									HttpStatus.BAD_REQUEST,
+									false,
+									err.message,
+								);
+							} else {
+								throw err;
+							}
+						}
+					} catch (err) {
+						if (err instanceof Error) {
+							throw this.responseService.responseGenerator(
+								req,
+								HttpStatus.BAD_REQUEST,
+								false,
+								err.message,
+							);
+						} else {
+							throw err;
+						}
+					}
+				} catch (err) {
+					if (err instanceof Error) {
+						throw this.responseService.responseGenerator(
+							req,
+							HttpStatus.BAD_REQUEST,
+							false,
+							err.message,
+						);
+					} else {
+						throw err;
+					}
+				}
+			} else {
+				const data = {
+					title: dto.title,
+					description: dto.description,
+					img: project.img,
+				};
+
+				try {
+					await this.projectsRepository.update(data, { where: { id } });
+					try {
+						await this.technologiesRepository.destroy({
+							where: { projectId: id },
+						});
+
+						const newTechnologies = dto.technologies.split(',').map((item) => ({
+							name: item.trim(),
+							projectId: id,
+						}));
+
+						try {
+							await this.technologiesService.createTechnologies(
+								newTechnologies,
+							);
+							throw this.responseService.responseGenerator(
+								req,
+								HttpStatus.OK,
+								true,
+								'The project has been updated',
+							);
+						} catch (err) {
+							if (err instanceof Error) {
+								throw this.responseService.responseGenerator(
+									req,
+									HttpStatus.BAD_REQUEST,
+									false,
+									err.message,
+								);
+							} else {
+								throw err;
+							}
+						}
+					} catch (err) {
+						if (err instanceof Error) {
+							throw this.responseService.responseGenerator(
+								req,
+								HttpStatus.BAD_REQUEST,
+								false,
+								err.message,
+							);
+						} else {
+							throw err;
+						}
+					}
+				} catch (err) {
+					if (err instanceof Error) {
+						throw this.responseService.responseGenerator(
+							req,
+							HttpStatus.BAD_REQUEST,
+							false,
+							err.message,
+						);
+					} else {
+						throw err;
+					}
+				}
+			}
+		} catch (err) {
+			if (err instanceof Error) {
+				throw this.responseService.response({
+					status: HttpStatus.BAD_REQUEST,
+					success: false,
+					message: err.message,
+				});
+			} else {
+				throw this.responseService.response(err);
+			}
+		}
 	}
 
 	public async deleteProject(

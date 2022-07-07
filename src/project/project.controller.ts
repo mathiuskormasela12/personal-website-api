@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
-import { CreateProjectDto, GetAllProjectsDto } from './dto';
+import { CreateOrUpdateProjectDto, GetAllProjectsDto } from './dto';
 import { ProjectService } from './project.service';
 
 @Controller('api/v1')
@@ -26,7 +26,7 @@ export class ProjectController {
 	@UseGuards(AuthGuard)
 	public createProject(
 		@Request() req: IRequestWithUploadAndAppLocals,
-		@Body() dto: CreateProjectDto,
+		@Body() dto: CreateOrUpdateProjectDto,
 	) {
 		return this.projectService.createProject(req, dto);
 	}
@@ -49,8 +49,12 @@ export class ProjectController {
 
 	@Patch('project/:id')
 	@UseGuards(AuthGuard)
-	public updateProject() {
-		return this.projectService.updateProject();
+	public updateProject(
+		@Request() req: IRequestWithUploadAndAppLocals,
+		@Body() dto: CreateOrUpdateProjectDto,
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.projectService.updateProject(req, dto, id);
 	}
 
 	@Delete('project/:id')

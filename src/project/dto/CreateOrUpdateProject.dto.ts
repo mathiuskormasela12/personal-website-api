@@ -1,8 +1,8 @@
-// ========= Create Project Dto
+// ========= Create or Update Project Dto
 // import all modules
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
-export class CreateProjectDto {
+export class CreateOrUpdateProjectDto {
 	@MaxLength(100, { message: 'The title is too long' })
 	@IsString({ message: 'The title should be a string' })
 	@IsNotEmpty({ message: "The title can't be empty" })
