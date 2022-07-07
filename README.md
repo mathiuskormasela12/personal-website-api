@@ -18,7 +18,7 @@ This is the RESTful API of the my personal website that's written in the Nest js
 - Create The Personal Website Database
 
 	```bash
-	CREATE DATABASE personal-webote CHARACTER SET utf8 COLLATE utf8_general_ci;
+	CREATE DATABASE personal-website CHARACTER SET utf8 COLLATE utf8_general_ci;
 	```
 
 - Run On Development
