@@ -11,6 +11,8 @@ import {
 	Query,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { existsSync, unlinkSync } from 'fs';
+import { join } from 'path';
 import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
 import { ResponseService } from 'src/response/response.service';
 import { TechnologiesService } from 'src/technologies/technologies.service';
@@ -254,11 +256,75 @@ export class ProjectService {
 		});
 	}
 
-	public deleteProject() {
-		throw this.responseService.response({
-			status: 200,
-			success: true,
-			message: 'This is a delete project API',
-		});
+	public async deleteProject(
+		@Request() req: Request,
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		try {
+			const isExists = await this.projectsRepository.findByPk(id);
+
+			if (!isExists) {
+				throw this.responseService.responseGenerator(
+					req,
+					HttpStatus.NOT_FOUND,
+					false,
+					'The project is not found',
+				);
+			}
+
+			try {
+				await this.technologiesRepository.destroy({ where: { projectId: id } });
+
+				try {
+					await this.projectsRepository.destroy({ where: { id } });
+					const isImgExists = existsSync(
+						join(__dirname, '../../uploads/' + isExists.img),
+					);
+
+					if (isImgExists) {
+						unlinkSync(join(__dirname, '../../uploads/' + isExists.img));
+					}
+
+					throw this.responseService.responseGenerator(
+						req,
+						HttpStatus.OK,
+						true,
+						'The project has been deleted successfully',
+					);
+				} catch (err) {
+					if (err instanceof Error) {
+						throw this.responseService.responseGenerator(
+							req,
+							HttpStatus.BAD_REQUEST,
+							false,
+							err.message,
+						);
+					} else {
+						throw err;
+					}
+				}
+			} catch (err) {
+				if (err instanceof Error) {
+					throw this.responseService.responseGenerator(
+						req,
+						HttpStatus.BAD_REQUEST,
+						false,
+						err.message,
+					);
+				} else {
+					throw err;
+				}
+			}
+		} catch (err) {
+			if (err instanceof Error) {
+				throw this.responseService.response({
+					status: HttpStatus.BAD_REQUEST,
+					success: false,
+					message: err.message,
+				});
+			} else {
+				throw this.responseService.response(err);
+			}
+		}
 	}
 }

@@ -55,7 +55,10 @@ export class ProjectController {
 
 	@Delete('project/:id')
 	@UseGuards(AuthGuard)
-	public deleteProject() {
-		return this.projectService.deleteProject();
+	public deleteProject(
+		@Request() req: Request,
+		@Param('id', ParseIntPipe) id: number,
+	) {
+		return this.projectService.deleteProject(req, id);
 	}
 }
