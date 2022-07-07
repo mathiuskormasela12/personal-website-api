@@ -116,6 +116,15 @@ export class UserService {
 				);
 			}
 
+			if (dto.password !== dto.repeatPassword) {
+				throw this.responseService.responseGenerator(
+					req,
+					HttpStatus.BAD_REQUEST,
+					false,
+					'The password and the repeat password do not match',
+				);
+			}
+
 			try {
 				const hashed: string = await bcrypt.hash(dto.password, 8);
 
