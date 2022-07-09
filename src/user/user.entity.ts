@@ -17,9 +17,6 @@ export class User extends Model {
 	@Column
 	password: string;
 
-	@Column
-	cv: string;
-
 	@CreatedAt
 	createdAt: Date;
 

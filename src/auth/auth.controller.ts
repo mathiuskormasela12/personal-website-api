@@ -18,7 +18,7 @@ export class AuthController {
 		return this.authService.login(req, dto);
 	}
 
-	@Post('/auth/acess-token')
+	@Post('/auth/access-token')
 	public createAccessTokenUsingRefreshToken(
 		@Request() req: Request,
 		@Body() dto: CreateAccessTokenDto,

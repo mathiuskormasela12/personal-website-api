@@ -80,7 +80,7 @@ This is the RESTful API of the my personal website that's written in the Nest js
 	}
 	```
 
-- PUT `/api/v1/user/password` Route for reset the password
+- PATCH `/api/v1/user/password/:id` Route for reset the password
 
 	Request Body
 
@@ -91,17 +91,6 @@ This is the RESTful API of the my personal website that's written in the Nest js
 	}
 	```
 
-- GET `/api/v1/user/cv` Route for downloading a cv
-
-- PATCH `/api/v1/user/cv/:id` Route for uploading a cv
-
-	Request Body (Multipart/Form-Data)
-
-	```
-	{
-		"cv": "blob file (pdf file only)"
-	}
-	```
 - GET `/api/v1/project/:id` Route to get a detail of project
 
 - GET `/api/v1/projects` Route to get all projects

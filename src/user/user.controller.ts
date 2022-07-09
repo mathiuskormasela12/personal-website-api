@@ -4,16 +4,11 @@ import {
 	Controller,
 	Patch,
 	Post,
-	Get,
 	Request,
 	Param,
 	ParseIntPipe,
-	Response,
-	UseGuards,
 	Body,
 } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { IRequestWithUpload, IResponseWithDownload } from 'src/interfaces';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto';
 import { UserService } from './user.service';
 
@@ -36,22 +31,5 @@ export class UserController {
 		@Param('id', ParseIntPipe) id: number,
 	) {
 		return this.userService.resetPassword(req, dto, id);
-	}
-
-	@Patch('user/cv/:id')
-	@UseGuards(AuthGuard)
-	public uploadCv(
-		@Request() req: IRequestWithUpload,
-		@Param('id', ParseIntPipe) id: number,
-	) {
-		return this.userService.uploadCv(req, id);
-	}
-
-	@Get('user/cv')
-	public downloadCv(
-		@Request() req: Request,
-		@Response() res: IResponseWithDownload,
-	) {
-		return this.userService.downloadCv(req, res);
 	}
 }

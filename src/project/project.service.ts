@@ -159,7 +159,15 @@ export class ProjectService {
 					attributes: ['id', 'name'],
 				},
 			});
-			const totalData = results.length;
+			const resultsForCount = await this.projectsRepository.findAll({
+				attributes: ['id', 'title', 'description', 'img'],
+				order: [['id', 'ASC']],
+				include: {
+					model: this.technologiesRepository,
+					attributes: ['id', 'name'],
+				},
+			});
+			const totalData = resultsForCount.length;
 			const totalPages = Math.ceil(totalData / limit);
 
 			if (results.length < 1) {
@@ -173,7 +181,7 @@ export class ProjectService {
 
 			const modifiedResults = [];
 
-			for (let index = 0; index < totalData; index++) {
+			for (let index = 0; index < results.length; index++) {
 				modifiedResults.push({
 					id: results[index].id,
 					title: results[index].title,
@@ -210,7 +218,14 @@ export class ProjectService {
 		@Param('id', ParseIntPipe) id: number,
 	) {
 		try {
-			const result = await this.projectsRepository.findOne({ where: { id } });
+			const result = await this.projectsRepository.findOne({
+				attributes: ['id', 'title', 'description', 'img'],
+				where: { id },
+				include: {
+					model: this.technologiesRepository,
+					attributes: ['id', 'name'],
+				},
+			});
 
 			if (!result) {
 				throw this.responseService.responseGenerator(
@@ -226,6 +241,7 @@ export class ProjectService {
 				title: result.title,
 				description: result.description,
 				img: `${this.configService.get('APP_URL')}/${result.img}`,
+				technologies: result.technologies,
 			};
 
 			throw this.responseService.responseGenerator(

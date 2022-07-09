@@ -9,13 +9,9 @@ import {
 	Param,
 	ParseIntPipe,
 	Request,
-	Response,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { existsSync, unlinkSync } from 'fs';
-import { join } from 'path';
 import * as bcrypt from 'bcryptjs';
-import { IRequestWithUpload, IResponseWithDownload } from 'src/interfaces';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { ResponseService } from 'src/response/response.service';
 import { UploadService } from 'src/upload/upload.service';
@@ -166,118 +162,6 @@ export class UserService {
 					throw err;
 				}
 			}
-		} catch (err) {
-			if (err instanceof Error) {
-				throw this.responseService.response({
-					status: HttpStatus.BAD_REQUEST,
-					success: false,
-					message: err.message,
-				});
-			} else {
-				throw this.responseService.response(err);
-			}
-		}
-	}
-
-	public async uploadCv(
-		@Request() req: IRequestWithUpload,
-		@Param('id', ParseIntPipe) id: number,
-	) {
-		try {
-			const isExists = await this.usersRepository.findByPk(id);
-
-			if (!isExists) {
-				throw this.responseService.responseGenerator(
-					req,
-					HttpStatus.BAD_REQUEST,
-					false,
-					'The account is not found',
-				);
-			}
-
-			const {
-				success,
-				cv = null,
-				message,
-			} = await this.uploadService.uploadPdf(req);
-
-			if (!success) {
-				throw this.responseService.responseGenerator(
-					req,
-					HttpStatus.BAD_REQUEST,
-					false,
-					message,
-				);
-			}
-
-			try {
-				await this.usersRepository.update({ cv }, { where: { id } });
-
-				if (existsSync(join(__dirname, '../../uploads/' + isExists.cv))) {
-					unlinkSync(join(__dirname, '../../uploads/' + isExists.cv));
-				}
-
-				throw this.responseService.responseGenerator(
-					req,
-					HttpStatus.OK,
-					true,
-					'Your cv has been uploaded',
-				);
-			} catch (err) {
-				if (err instanceof Error) {
-					throw this.responseService.responseGenerator(
-						req,
-						HttpStatus.BAD_REQUEST,
-						false,
-						err.message,
-					);
-				} else {
-					throw err;
-				}
-			}
-		} catch (err) {
-			if (err instanceof Error) {
-				throw this.responseService.response({
-					status: HttpStatus.BAD_REQUEST,
-					success: false,
-					message: err.message,
-				});
-			} else {
-				throw this.responseService.response(err);
-			}
-		}
-	}
-
-	public async downloadCv(
-		@Request() req: Request,
-		@Response() res: IResponseWithDownload,
-	) {
-		try {
-			const isExists = await this.usersRepository.findOne({
-				order: [['updatedAt', 'ASC']],
-			});
-
-			if (!isExists) {
-				throw this.responseService.responseGenerator(
-					req,
-					HttpStatus.BAD_REQUEST,
-					false,
-					'The accounts is not found',
-				);
-			}
-
-			if (!isExists.cv) {
-				throw this.responseService.responseGenerator(
-					req,
-					HttpStatus.BAD_REQUEST,
-					false,
-					'The cv does not exists',
-				);
-			}
-
-			const cvLink = join(__dirname, '../../uploads/' + isExists.cv);
-
-			res.download(cvLink);
 		} catch (err) {
 			if (err instanceof Error) {
 				throw this.responseService.response({
