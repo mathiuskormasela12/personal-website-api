@@ -54,6 +54,20 @@ docker compose up --build
   http://localhost:9000.
 - To stop everything but keep the database data: `docker compose down`.
 
+### Database-only Compose stack
+
+If you develop the API outside Docker (`npm run start:dev`) and only want the
+database in Docker:
+
+```bash
+docker compose -f docker-compose.db.yml up -d
+```
+
+- MySQL is published on host port `${DB_PORT:-3306}` — set `DB_HOST=127.0.0.1`
+  (and `DB_PORT` if not 3306) in `.env` for the locally-running API.
+- It shares the same `db_data` volume as the full stack, so data is common to
+  both. Don't run the two stacks at the same time (same container name).
+
 ## Entity Relationship Diagram (ERD)
 
 [<img src="screenshoot/ERD.png" width="500" height="500" />](screenshoot/ERD.png)
