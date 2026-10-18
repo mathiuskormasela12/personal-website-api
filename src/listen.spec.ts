@@ -23,6 +23,22 @@ describe('bootstrap (integration)', () => {
 		const response = await fetch('http://127.0.0.1:9147/');
 		expect(response.status).toBeLessThan(500);
 
+		// Validation errors must keep the API's {status, success, message} shape.
+		const invalid = await fetch('http://127.0.0.1:9147/api/v1/auth/register', {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({
+				email: 'not-an-email',
+				password: 'x',
+				repeatPassword: 'x',
+			}),
+		});
+		expect(invalid.status).toBe(400);
+		expect(await invalid.json()).toMatchObject({
+			status: 400,
+			success: false,
+		});
+
 		await app.close();
 	}, 30000);
 
