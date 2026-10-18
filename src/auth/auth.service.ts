@@ -1,6 +1,6 @@
 // ========== Auth Service
 // import all modules
-import { Body, HttpStatus, Inject, Injectable, Request } from '@nestjs/common';
+import { Body, HttpStatus, Injectable, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/sequelize';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';

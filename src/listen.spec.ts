@@ -3,7 +3,7 @@
 process.env.PORT = '9147';
 
 import { Test } from '@nestjs/testing';
-import { bootstrap, configureApp, getListenTarget } from './main';
+import { configureApp, getListenTarget } from './main';
 import { AppModule } from './app.module';
 import { Sequelize } from 'sequelize-typescript';
 
