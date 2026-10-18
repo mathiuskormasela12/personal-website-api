@@ -38,7 +38,6 @@ const buildService = () =>
 		new ResponseService(configService),
 		{} as any, // UploadService is not used by the password flows
 		nodemailerService,
-		{} as any, // MailerService is only passed through to sendEmail
 		configService,
 		jwtService,
 		usersRepository,
@@ -90,10 +89,8 @@ describe('UserService', () => {
 			});
 
 			expect(nodemailerService.sendEmail).toHaveBeenCalledTimes(1);
-			const [mailer, to, from, link] = (
-				nodemailerService.sendEmail as jest.Mock
-			).mock.calls[0];
-			expect(mailer).toBe((service as any).mailerService);
+			const [to, from, link] = (nodemailerService.sendEmail as jest.Mock).mock
+				.calls[0];
 			expect(to).toBe('a@b.c');
 			expect(from).toBe(configValues.EMAIL);
 			expect(link).toMatch(/^http:\/\/localhost:3000\/forgot\?token=.+/);
