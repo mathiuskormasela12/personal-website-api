@@ -5,12 +5,13 @@ process.env.PORT = '9147';
 import { Test } from '@nestjs/testing';
 import { configureApp, getListenTarget } from './main';
 import { AppModule } from './app.module';
+import { Sequelize } from 'sequelize-typescript';
 
 describe('bootstrap (integration)', () => {
 	it('listens on 0.0.0.0 at the PORT from the environment', async () => {
 		const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
-			.overrideProvider('SEQUELIZE')
-			.useValue({ define: jest.fn() })
+			.overrideProvider(Sequelize)
+			.useValue({ define: jest.fn(), authenticate: jest.fn() })
 			.compile();
 
 		const app = configureApp(moduleRef.createNestApplication());

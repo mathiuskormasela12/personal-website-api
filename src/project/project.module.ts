@@ -3,13 +3,15 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { technologiesProviders } from 'src/technologies/technologies.providers';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
-import { projectsProviders } from './projects.providers';
+import { Project } from './project.entity';
+import { Technology } from 'src/technologies/technology.entity';
 
 @Module({
 	imports: [
+		SequelizeModule.forFeature([Project, Technology]),
 		JwtModule.registerAsync({
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
@@ -20,7 +22,7 @@ import { projectsProviders } from './projects.providers';
 			}),
 		}),
 	],
-	providers: [ProjectService, ...projectsProviders, ...technologiesProviders],
+	providers: [ProjectService],
 	controllers: [ProjectController],
 })
 export class ProjectModule {}

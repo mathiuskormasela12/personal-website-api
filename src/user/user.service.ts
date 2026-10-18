@@ -3,13 +3,13 @@
 import {
 	Body,
 	HttpStatus,
-	Inject,
 	Injectable,
 	Param,
 	ParseIntPipe,
 	Request,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/sequelize';
 import * as bcrypt from 'bcryptjs';
 import { NodemailerService } from 'src/nodemailer/nodemailer.service';
 import { ResponseService } from 'src/response/response.service';
@@ -26,7 +26,7 @@ export class UserService {
 		private readonly nodemailerService: NodemailerService,
 		private readonly configService: ConfigService,
 		private readonly jwtService: JwtService,
-		@Inject('USERS_REPOSITORY')
+		@InjectModel(User)
 		private readonly usersRepository: typeof User,
 	) {}
 
