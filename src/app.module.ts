@@ -7,6 +7,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
+import { envValidationSchema } from './config/env.validation';
 import AuthModule from './auth/auth.module';
 import { ResponseModule } from './response/response.module';
 import { DatabaseModule } from './database/database.module';
@@ -21,6 +22,8 @@ import { NodemailerModule } from './nodemailer/nodemailer.module';
 		// Setup for environment variables
 		ConfigModule.forRoot({
 			isGlobal: true,
+			validationSchema: envValidationSchema,
+			validationOptions: { libraryOptions: { abortEarly: false } },
 		}),
 
 		// Setup for serving static files
