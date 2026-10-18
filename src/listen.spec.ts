@@ -1,7 +1,6 @@
 // ========== Boot integration test: the server must listen on 0.0.0.0:<PORT>.
 // The real Sequelize provider is overridden because there is no MySQL here.
 process.env.PORT = '9147';
-
 import { Test } from '@nestjs/testing';
 import { configureApp, getListenTarget } from './main';
 import { AppModule } from './app.module';

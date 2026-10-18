@@ -36,6 +36,7 @@ export class ProjectService {
 
 	public async createProject(
 		@Request() req: IRequestWithUploadAndAppLocals,
+		img: Express.Multer.File,
 		@Body() dto: CreateOrUpdateProjectDto,
 	) {
 		try {
@@ -57,10 +58,10 @@ export class ProjectService {
 			try {
 				const {
 					success,
-					img = null,
+					img: uploadedImg = null,
 					message,
 					status,
-				} = await this.uploadService.uploadImage(req);
+				} = await this.uploadService.uploadImage(img);
 
 				if (!success) {
 					throw this.responseService.responseGenerator(
@@ -75,7 +76,7 @@ export class ProjectService {
 					const results = await this.projectsRepository.create({
 						title: dto.title,
 						description: dto.description,
-						img,
+						img: uploadedImg,
 					});
 
 					const technologies = dto.technologies.split(',');
@@ -266,6 +267,7 @@ export class ProjectService {
 
 	public async updateProject(
 		@Request() req: IRequestWithUploadAndAppLocals,
+		img: Express.Multer.File,
 		@Body() dto: CreateOrUpdateProjectDto,
 		@Param('id', ParseIntPipe) id: number,
 	) {
@@ -281,10 +283,14 @@ export class ProjectService {
 				);
 			}
 
-			if (req.files) {
+			if (img) {
 				try {
-					const { success, img, message, status } =
-						await this.uploadService.uploadImage(req);
+					const {
+						success,
+						img: uploadedImg = null,
+						message,
+						status,
+					} = await this.uploadService.uploadImage(img);
 
 					if (!success) {
 						throw this.responseService.responseGenerator(
@@ -298,7 +304,7 @@ export class ProjectService {
 					const data = {
 						title: dto.title,
 						description: dto.description,
-						img,
+						img: uploadedImg,
 					};
 
 					try {
