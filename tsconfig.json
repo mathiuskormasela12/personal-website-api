@@ -6,7 +6,7 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "types": ["node", "jest"],
+    "types": ["node", "jest", "multer"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "target": "es2017",

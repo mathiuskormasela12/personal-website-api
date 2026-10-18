@@ -11,7 +11,6 @@ import type { INestApplication } from '@nestjs/common';
 import compression from 'compression';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import expressFileUpload from 'express-fileupload';
 import 'dotenv/config';
 import constants from './constants';
 import { AppModule } from './app.module';
@@ -58,12 +57,6 @@ export function configureApp(app: INestApplication): INestApplication {
 			whitelist: true,
 			transform: true,
 			exceptionFactory: validationExceptionFactory,
-		}),
-	);
-
-	app.use(
-		expressFileUpload({
-			createParentPath: true,
 		}),
 	);
 
