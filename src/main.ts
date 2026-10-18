@@ -1,10 +1,10 @@
 // ========== Main
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import * as compression from 'compression';
+import compression from 'compression';
 import helmet from 'helmet';
-import * as morgan from 'morgan';
-import * as expressFileUpload from 'express-fileupload';
+import morgan from 'morgan';
+import expressFileUpload from 'express-fileupload';
 import 'dotenv/config';
 import constants from './constants';
 import { AppModule } from './app.module';
