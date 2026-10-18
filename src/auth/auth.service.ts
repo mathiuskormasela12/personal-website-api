@@ -2,7 +2,7 @@
 // import all modules
 import { Body, HttpStatus, Inject, Injectable, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { IJwtToken } from 'src/interfaces';
 import { ResponseService } from 'src/response/response.service';
@@ -209,7 +209,7 @@ export class AuthService {
 		const secret: string = this.configService.get(
 			'JWT_ACCESS_TOKEN_SECRET_KEY',
 		);
-		const expiresIn: string = this.configService.get(
+		const expiresIn: JwtSignOptions['expiresIn'] = this.configService.get(
 			'JWT_ACCESS_TOKEN_EXPIRES_IN',
 		);
 
@@ -220,7 +220,7 @@ export class AuthService {
 		const secret: string = this.configService.get(
 			'JWT_REFRESH_TOKEN_SECRET_KEY',
 		);
-		const expiresIn: string = this.configService.get(
+		const expiresIn: JwtSignOptions['expiresIn'] = this.configService.get(
 			'JWT_REFRESH_TOKEN_EXPIRES_IN',
 		);
 

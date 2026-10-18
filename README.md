@@ -30,8 +30,29 @@ This is the RESTful API of the my personal website that's written in the Nest js
 - Run On Production
 
 	```bash
-	npm run start
+	npm run build
+	npm run start:prod
 	```
+
+The API reads its port from the `PORT` environment variable and always listens
+on `0.0.0.0`. When `PORT` is unset (or invalid), it falls back to `9000`.
+
+## Run With Docker Compose
+
+This starts MySQL 8 and the API together:
+
+```bash
+cp .env.example .env   # fill in DB_*, JWT and email settings
+docker compose up --build
+```
+
+- The database runs as the `db` service; `DB_HOST` is set to `db` and `DB_PORT`
+  to `3306` automatically, so those two values in `.env` are ignored in Docker.
+- MySQL data is stored in the `db_data` volume, so it survives restarts.
+- The API listens on `0.0.0.0:${PORT:-9000}` inside its container and is
+  published on host port `${PORT:-9000}`. With the defaults, open
+  http://localhost:9000.
+- To stop everything but keep the database data: `docker compose down`.
 
 ## Entity Relationship Diagram (ERD)
 
