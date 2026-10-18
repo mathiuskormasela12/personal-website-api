@@ -1,6 +1,5 @@
 // ========== User Service
 // import all modules
-import { MailerService } from '@nestjs-modules/mailer';
 import {
 	Body,
 	HttpStatus,
@@ -25,7 +24,6 @@ export class UserService {
 		private readonly responseService: ResponseService,
 		private readonly uploadService: UploadService,
 		private readonly nodemailerService: NodemailerService,
-		private readonly mailerService: MailerService,
 		private readonly configService: ConfigService,
 		private readonly jwtService: JwtService,
 		@Inject('USERS_REPOSITORY')
@@ -60,7 +58,6 @@ export class UserService {
 
 			try {
 				await this.nodemailerService.sendEmail(
-					this.mailerService,
 					dto.email,
 					this.configService.get('EMAIL'),
 					link,
