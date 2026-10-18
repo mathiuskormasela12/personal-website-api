@@ -2,7 +2,7 @@
 // The real Sequelize provider is overridden because there is no MySQL here.
 process.env.PORT = '9147';
 import { Test } from '@nestjs/testing';
-import { configureApp, getListenTarget } from './main';
+import { configureApp, getListenTarget, setupSwagger } from './main';
 import { AppModule } from './app.module';
 import { Sequelize } from 'sequelize-typescript';
 
@@ -14,6 +14,7 @@ describe('bootstrap (integration)', () => {
 			.compile();
 
 		const app = configureApp(moduleRef.createNestApplication());
+		setupSwagger(app);
 		const { port, host } = getListenTarget();
 		await app.listen(port, host);
 
@@ -22,6 +23,22 @@ describe('bootstrap (integration)', () => {
 
 		const response = await fetch('http://127.0.0.1:9147/');
 		expect(response.status).toBeLessThan(500);
+
+		// Swagger UI + OpenAPI document are served at /api-docs(/-json).
+		const docsJson = await fetch('http://127.0.0.1:9147/api-docs-json');
+		expect(docsJson.status).toBe(200);
+		const spec = await docsJson.json();
+		expect(spec.info.title).toBe('Personal Website API');
+		expect(Object.keys(spec.paths)).toEqual(
+			expect.arrayContaining([
+				'/api/v1/auth/register',
+				'/api/v1/auth/login',
+				'/api/v1/projects',
+			]),
+		);
+		const ui = await fetch('http://127.0.0.1:9147/api-docs');
+		expect(ui.status).toBe(200);
+		expect(await ui.text()).toContain('Swagger UI');
 
 		// Validation errors must keep the API's {status, success, message} shape.
 		const invalid = await fetch('http://127.0.0.1:9147/api/v1/auth/register', {
