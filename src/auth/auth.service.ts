@@ -2,6 +2,7 @@
 // import all modules
 import { Body, HttpStatus, Inject, Injectable, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/sequelize';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { IJwtToken } from 'src/interfaces';
@@ -15,7 +16,7 @@ export class AuthService {
 		private readonly responseService: ResponseService,
 		private readonly jwtService: JwtService,
 		private readonly configService: ConfigService,
-		@Inject('USERS_REPOSITORY') private readonly usersRepository: typeof User,
+		@InjectModel(User) private readonly usersRepository: typeof User,
 	) {}
 
 	public async register(@Request() req: Request, @Body() dto: RegisterDto) {

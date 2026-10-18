@@ -11,6 +11,7 @@ import {
 	Query,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectModel } from '@nestjs/sequelize';
 import { existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
@@ -28,9 +29,9 @@ export class ProjectService {
 		private readonly uploadService: UploadService,
 		private readonly configService: ConfigService,
 		private readonly technologiesService: TechnologiesService,
-		@Inject('PROJECTS_REPOSITORY')
+		@InjectModel(Project)
 		private readonly projectsRepository: typeof Project,
-		@Inject('TECHNOLOGIES_REPOSITORY')
+		@InjectModel(Technology)
 		private readonly technologiesRepository: typeof Technology,
 	) {}
 

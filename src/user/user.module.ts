@@ -3,12 +3,14 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { usersProviders } from './users.providers';
+import { User } from './user.entity';
 
 @Module({
 	imports: [
+		SequelizeModule.forFeature([User]),
 		JwtModule.registerAsync({
 			inject: [ConfigService],
 			useFactory: (configService: ConfigService) => ({
@@ -19,7 +21,7 @@ import { usersProviders } from './users.providers';
 			}),
 		}),
 	],
-	providers: [UserService, ...usersProviders],
+	providers: [UserService],
 	controllers: [UserController],
 })
 export class UserModule {}
