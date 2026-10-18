@@ -19,6 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { IRequestWithUploadAndAppLocals } from 'src/interfaces';
 import { CreateOrUpdateProjectDto, GetAllProjectsDto } from './dto';
+import { ApiSecurity } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 
 @Controller('api/v1')
@@ -26,6 +27,7 @@ export class ProjectController {
 	constructor(private readonly projectService: ProjectService) {}
 
 	@Post('project')
+	@ApiSecurity('x-access-token')
 	@UseGuards(AuthGuard)
 	@UseInterceptors(FileInterceptor('img'))
 	public createProject(
@@ -53,6 +55,7 @@ export class ProjectController {
 	}
 
 	@Patch('project/:id')
+	@ApiSecurity('x-access-token')
 	@UseGuards(AuthGuard)
 	@UseInterceptors(FileInterceptor('img'))
 	public updateProject(
@@ -65,6 +68,7 @@ export class ProjectController {
 	}
 
 	@Delete('project/:id')
+	@ApiSecurity('x-access-token')
 	@UseGuards(AuthGuard)
 	public deleteProject(
 		@Request() req: Request,
