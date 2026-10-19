@@ -122,6 +122,18 @@ if (fs.existsSync(templateFile)) {
 			console.log('swagger-ui transform: template anchor not found — diagnostic not injected')
 		}
 	}
+	if (!template.includes('<noscript>')) {
+		const noscript = '<noscript><div style="position:fixed;top:0;left:0;right:0;z-index:99999;margin:0;padding:12px;background:#b91c1c;color:#fff;font:14px sans-serif">'
+			+ 'JavaScript is disabled in this browser — Swagger UI needs JavaScript to run. Enable it and reload.'
+			+ '</div></noscript>'
+		const bodyAnchor = '<div id="swagger-ui"></div>'
+		if (template.includes(bodyAnchor)) {
+			// noscript must render even without JS, so it sits before the script tags
+			template = template.replace(bodyAnchor, noscript + bodyAnchor)
+			fs.writeFileSync(templateFile, template)
+			console.log('swagger-ui transform: noscript warning injected into the HTML template')
+		}
+	}
 } else {
 	console.log('swagger-ui transform: @nestjs/swagger template file not found — diagnostic not injected')
 }
