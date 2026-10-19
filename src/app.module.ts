@@ -16,7 +16,6 @@ import { ProjectModule } from './project/project.module';
 import { UserModule } from './user/user.module';
 import { UploadModule } from './upload/upload.module';
 import { NodemailerModule } from './nodemailer/nodemailer.module';
-import { HelloWorldModule } from './hello-world/hello-world.module';
 
 @Module({
 	imports: [
@@ -58,7 +57,6 @@ import { HelloWorldModule } from './hello-world/hello-world.module';
 
 		AuthModule,
 		UserModule,
-		HelloWorldModule,
 		ProjectModule,
 		TechnologiesModule,
 		UploadModule,

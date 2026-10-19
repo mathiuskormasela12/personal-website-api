@@ -132,16 +132,6 @@ docker compose -f docker-compose.db.yml up -d
 	}
 	```
 
-- GET `/hello-world` Public endpoint. Returns:
-
-	```json
-	{
-		"status": 200,
-		"success": true,
-		"message": "Hello World!"
-	}
-	```
-
 - GET `/api/v1/project/:id` Route to get a detail of project
 
 - GET `/api/v1/projects` Route to get all projects
