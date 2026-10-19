@@ -65,7 +65,20 @@ export function setupSwagger(app: INestApplication): void {
 /** Middlewares, CORS, validation and upload wiring, shared by bootstrap and tests. */
 export function configureApp(app: INestApplication): INestApplication {
 	app.use(compression());
-	app.use(helmet());
+	app.use(
+		helmet({
+			contentSecurityPolicy: {
+				directives: {
+					...helmet.contentSecurityPolicy.getDefaultDirectives(),
+					// The API serves plain HTTP on the network (dev, LAN, Docker).
+					// upgrade-insecure-requests makes browsers rewrite every
+					// subresource to https:// — over a non-localhost origin with no
+					// TLS that silently breaks all scripts (white page).
+					'upgrade-insecure-requests': null,
+				},
+			},
+		}),
+	);
 	app.use(morgan('dev'));
 
 	app.enableCors({
