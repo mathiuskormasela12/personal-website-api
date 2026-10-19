@@ -7,7 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
+    "postinstall": "node scripts/transform-swagger-ui.js",
+    "build": "nest build && node scripts/transform-swagger-ui.js",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -58,6 +59,7 @@
     "@types/node": "^26.6.5",
     "@types/supertest": "^7.2.1",
     "cross-env": "^10.1.0",
+    "esbuild": "^0.28.2",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
