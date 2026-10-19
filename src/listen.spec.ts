@@ -29,6 +29,11 @@ describe('bootstrap (integration)', () => {
 		expect(ui.status).toBe(200);
 		expect(await ui.text()).toContain('Swagger UI');
 
+		// upgrade-insecure-requests must be absent: over plain HTTP on a LAN
+		// origin it upgrades all subresources to https and whites the page out.
+		const csp = ui.headers.get('content-security-policy') ?? '';
+		expect(csp).not.toContain('upgrade-insecure-requests');
+
 		const docsJson = await fetch('http://127.0.0.1:9147/api-docs-json');
 		expect(docsJson.status).toBe(200);
 		const spec = await docsJson.json();
