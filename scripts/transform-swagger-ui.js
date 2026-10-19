@@ -4,14 +4,23 @@
 // place after every install/build. Skips silently when esbuild is absent
 // (e.g. production-only installs without dev dependencies — the Dockerfile
 // copies the transformed files from the build stage instead).
+const isPostinstall = process.env.npm_lifecycle_event === 'postinstall'
+
+let esbuild
 try {
-	require.resolve('esbuild')
+	esbuild = require('esbuild')
 } catch {
-	console.log('esbuild not installed — skipping swagger-ui transform')
-	process.exit(0)
+	const message = 'esbuild is not installed — swagger-ui bundles would stay ES2021 and break old mobile browsers'
+	if (isPostinstall) {
+		// Production-only installs (--omit=dev) legitimately lack esbuild; the
+		// Dockerfile copies the transformed files from the build stage instead.
+		console.log(`${message} — skipping (postinstall, production install)`)
+		process.exit(0)
+	}
+	console.error(message)
+	process.exit(1)
 }
 
-const esbuild = require('esbuild')
 const fs = require('fs')
 const path = require('path')
 
