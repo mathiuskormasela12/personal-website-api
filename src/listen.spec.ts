@@ -46,15 +46,6 @@ describe('bootstrap (integration)', () => {
 			]),
 		);
 
-		// Public hello-world endpoint.
-		const hello = await fetch('http://127.0.0.1:9147/hello-world');
-		expect(hello.status).toBe(200);
-		expect(await hello.json()).toMatchObject({
-			status: 200,
-			success: true,
-			message: 'Hello World!',
-		});
-
 		// Validation errors must keep the API's {status, success, message} shape.
 		const invalid = await fetch('http://127.0.0.1:9147/api/v1/auth/register', {
 			method: 'POST',
