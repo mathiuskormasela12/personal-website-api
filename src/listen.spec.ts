@@ -24,7 +24,11 @@ describe('bootstrap (integration)', () => {
 		const response = await fetch('http://127.0.0.1:9147/');
 		expect(response.status).toBeLessThan(500);
 
-		// Swagger UI + OpenAPI document are served at /api-docs(/-json).
+		// Swagger UI is served at the root; the OpenAPI document at /api-docs-json.
+		const root = await fetch('http://127.0.0.1:9147/');
+		expect(root.status).toBe(200);
+		expect(await root.text()).toContain('Swagger UI');
+
 		const docsJson = await fetch('http://127.0.0.1:9147/api-docs-json');
 		expect(docsJson.status).toBe(200);
 		const spec = await docsJson.json();
@@ -36,9 +40,6 @@ describe('bootstrap (integration)', () => {
 				'/api/v1/projects',
 			]),
 		);
-		const ui = await fetch('http://127.0.0.1:9147/api-docs');
-		expect(ui.status).toBe(200);
-		expect(await ui.text()).toContain('Swagger UI');
 
 		// Validation errors must keep the API's {status, success, message} shape.
 		const invalid = await fetch('http://127.0.0.1:9147/api/v1/auth/register', {

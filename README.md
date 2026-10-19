@@ -39,7 +39,7 @@ on `0.0.0.0`. When `PORT` is unset (or invalid), it falls back to `9000`.
 
 ## API Documentation
 
-Interactive Swagger UI at [`/api-docs`](http://localhost:9000/api-docs) — the OpenAPI JSON lives at `/api-docs-json`. With the default `PORT` (9000), that's http://localhost:9000/api-docs.
+Interactive Swagger UI is served at the application root — with the default `PORT` (9000) that's [http://localhost:9000/](http://localhost:9000/) — and the OpenAPI JSON lives at [`/api-docs-json`](http://localhost:9000/api-docs-json).
 
 Protected routes expect the JWT in an `x-access-token` header — in Swagger UI, click **Authorize** and paste the token from the login response.
 
