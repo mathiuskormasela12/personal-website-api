@@ -59,11 +59,7 @@ export function setupSwagger(app: INestApplication): void {
 			)
 			.build(),
 	);
-	SwaggerModule.setup('', app, document, {
-		// UI is served at '/' — keep the OpenAPI document at /api-docs-json
-		// (the default would be a bare '-json' path).
-		jsonDocumentUrl: 'api-docs-json',
-	});
+	SwaggerModule.setup('api-docs', app, document);
 }
 
 /** Middlewares, CORS, validation and upload wiring, shared by bootstrap and tests. */
