@@ -1,0 +1,55 @@
+// ========== CORS integration test: only whitelisted origins get CORS headers.
+// The real Sequelize provider is overridden because there is no MySQL here.
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { Sequelize } from 'sequelize-typescript';
+import { AppModule } from './app.module';
+import constants from './constants';
+import { configureApp } from './main';
+
+const PORT = 9148;
+const LAN_FRONTEND = 'http://192.168.8.4:9000';
+
+describe('CORS whitelist (integration)', () => {
+	let app: INestApplication;
+
+	beforeAll(async () => {
+		const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+			.overrideProvider(Sequelize)
+			.useValue({ define: jest.fn(), authenticate: jest.fn() })
+			.compile();
+		app = configureApp(moduleRef.createNestApplication());
+		await app.listen(PORT, '127.0.0.1');
+	}, 30000);
+
+	afterAll(async () => {
+		await app.close();
+	});
+
+	const preflight = (origin: string) =>
+		fetch(`http://127.0.0.1:${PORT}/api/v1/projects`, {
+			method: 'OPTIONS',
+			headers: {
+				Origin: origin,
+				'Access-Control-Request-Method': 'GET',
+			},
+		});
+
+	it('whitelists the LAN frontend origin', () => {
+		expect(constants.WHITELIST).toContain(LAN_FRONTEND);
+	});
+
+	it.each([LAN_FRONTEND, ...constants.WHITELIST])(
+		'allows preflight requests from %s',
+		async (origin) => {
+			const response = await preflight(origin);
+			expect(response.status).toBeLessThan(300);
+			expect(response.headers.get('access-control-allow-origin')).toBe(origin);
+		},
+	);
+
+	it('does not allow an origin that is not whitelisted', async () => {
+		const response = await preflight('http://192.168.8.99:9000');
+		expect(response.headers.get('access-control-allow-origin')).toBeNull();
+	});
+});
