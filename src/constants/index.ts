@@ -6,6 +6,6 @@ export default {
 		'https://mathiuskormasela.com',
 		'http://mathiuskormasela.com',
 		// personal-website frontend on the LAN
-		'http://192.168.8.4:9000',
+		'http://192.168.8.4:9001',
 	],
 };
