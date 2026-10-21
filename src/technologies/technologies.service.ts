@@ -1,12 +1,13 @@
 // ========== Technologies Service
 // import all modules
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { Technology } from './technology.entity';
 
 @Injectable()
 export class TechnologiesService {
 	constructor(
-		@Inject('TECHNOLOGIES_REPOSITORY')
+		@InjectModel(Technology)
 		private readonly technologiesRepository: typeof Technology,
 	) {}
 	public async createTechnologies(data) {
