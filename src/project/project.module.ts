@@ -1,25 +1,28 @@
 // ========== Project Module
 // import all modules
 import { Module } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { technologiesProviders } from 'src/technologies/technologies.providers';
-import { ValidationPipe } from 'src/validation.pipe';
+import { ConfigService } from '@nestjs/config';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
-import { projectsProviders } from './projects.providers';
+import { Project } from './project.entity';
+import { Technology } from 'src/technologies/technology.entity';
 
 @Module({
-	imports: [JwtModule.register({})],
-	providers: [
-		{
-			provide: APP_PIPE,
-			useClass: ValidationPipe,
-		},
-		ProjectService,
-		...projectsProviders,
-		...technologiesProviders,
+	imports: [
+		SequelizeModule.forFeature([Project, Technology]),
+		JwtModule.registerAsync({
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => ({
+				secret: configService.get('SECRET_KEY'),
+				signOptions: {
+					expiresIn: configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN') || '1h',
+				},
+			}),
+		}),
 	],
+	providers: [ProjectService],
 	controllers: [ProjectController],
 })
 export class ProjectModule {}

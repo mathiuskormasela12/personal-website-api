@@ -9,8 +9,10 @@ import { IResponse } from 'src/interfaces';
 export class ResponseService {
 	constructor(private readonly configService: ConfigService) {}
 
-	public response(response: IResponse) {
-		return new HttpException(response, response.status);
+	// `unknown` because callers rethrow raw caught errors (TS 6 infers `unknown` in catch blocks).
+	public response(response: IResponse | unknown) {
+		const body = response as IResponse;
+		return new HttpException(body, body.status);
 	}
 
 	public responseGenerator(
@@ -56,14 +58,14 @@ export class ResponseService {
 						Number(page) > 1
 							? `${this.configService.get('APP_URL')}${pathname}?${Object.keys(
 									modifiedQueries,
-							  )
+								)
 									.map(
 										(item, index) =>
 											`${
 												item === 'page'
 													? `${item}=${
 															Number(Object.values(modifiedQueries)[index]) - 1
-													  }`
+														}`
 													: `${item}=${Object.values(modifiedQueries)[index]}`
 											}`,
 									)
@@ -73,14 +75,14 @@ export class ResponseService {
 						Number(page) < totalPages
 							? `${this.configService.get('APP_URL')}${pathname}?${Object.keys(
 									modifiedQueries,
-							  )
+								)
 									.map(
 										(item, index) =>
 											`${
 												item === 'page'
 													? `${item}=${
 															Number(Object.values(modifiedQueries)[index]) + 1
-													  }`
+														}`
 													: `${item}=${Object.values(modifiedQueries)[index]}`
 											}`,
 									)

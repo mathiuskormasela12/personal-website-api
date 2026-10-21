@@ -1,45 +1,116 @@
 // ========== Main
 import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import * as compression from 'compression';
+import {
+	HttpException,
+	Logger,
+	ValidationPipe,
+	HttpStatus,
+	ValidationError,
+} from '@nestjs/common';
+import type { INestApplication } from '@nestjs/common';
+import compression from 'compression';
 import helmet from 'helmet';
-import * as morgan from 'morgan';
-import * as expressFileUpload from 'express-fileupload';
+import morgan from 'morgan';
 import 'dotenv/config';
 import constants from './constants';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-async function bootstrap() {
-	const { PORT, API_URL } = process.env;
+/**
+ * Resolve the listening target (repo rule): the port comes from the PORT
+ * environment variable and the server binds to 0.0.0.0. PORT may be unset,
+ * empty, or garbage — then the default 9000 is used.
+ */
+export function getListenTarget(): { port: number; host: string } {
+	const parsed = Number(process.env.PORT);
+	const port = Number.isInteger(parsed) && parsed > 0 ? parsed : 9000;
+	return { port, host: '0.0.0.0' };
+}
 
-	const app = await NestFactory.create(AppModule);
+/**
+ * Validation errors keep the API's `{status, success, message}` response
+ * shape (the legacy custom pipe used to throw that), reported as a 400.
+ */
+export function validationExceptionFactory(errors: ValidationError[]) {
+	const [first] = errors;
+	const message =
+		first && first.constraints
+			? String(Object.values(first.constraints)[0])
+			: 'Validation failed';
+	return new HttpException(
+		{ status: HttpStatus.BAD_REQUEST, success: false, message },
+		HttpStatus.BAD_REQUEST,
+	);
+}
 
-	// Setup some of middlewares
+/** OpenAPI docs + Swagger UI at /api-docs (spec at /api-docs-json). */
+export function setupSwagger(app: INestApplication): void {
+	const document = SwaggerModule.createDocument(
+		app,
+		new DocumentBuilder()
+			.setTitle('Personal Website API')
+			.setDescription(
+				'RESTful API of the personal website. Protected routes expect the JWT in the `x-access-token` header.',
+			)
+			.setVersion('0.1')
+			.addApiKey(
+				{ type: 'apiKey', name: 'x-access-token', in: 'header' },
+				'x-access-token',
+			)
+			.build(),
+	);
+	SwaggerModule.setup('api-docs', app, document);
+}
+
+/** Middlewares, CORS, validation and upload wiring, shared by bootstrap and tests. */
+export function configureApp(app: INestApplication): INestApplication {
 	app.use(compression());
-	app.use(helmet());
+	app.use(
+		helmet({
+			contentSecurityPolicy: {
+				directives: {
+					...helmet.contentSecurityPolicy.getDefaultDirectives(),
+					// The API serves plain HTTP on the network (dev, LAN, Docker).
+					// upgrade-insecure-requests makes browsers rewrite every
+					// subresource to https:// — over a non-localhost origin with no
+					// TLS that silently breaks all scripts (white page).
+					'upgrade-insecure-requests': null,
+				},
+			},
+		}),
+	);
 	app.use(morgan('dev'));
 
-	// Setup cors
 	app.enableCors({
 		origin: constants.WHITELIST,
 	});
 
-	// Setup for Validation Pipes
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
 			transform: true,
+			exceptionFactory: validationExceptionFactory,
 		}),
 	);
 
-	// Middleware setup for uploading files
-	app.use(
-		expressFileUpload({
-			createParentPath: true,
-		}),
-	);
-
-	await app.listen(PORT);
-	Logger.log(`The RESTful API is being run on ${API_URL}`);
+	return app;
 }
-bootstrap();
+
+export async function bootstrap() {
+	const { API_URL } = process.env;
+
+	const app = configureApp(await NestFactory.create(AppModule));
+	setupSwagger(app);
+
+	const { port, host } = getListenTarget();
+	await app.listen(port, host);
+	Logger.log(
+		`The RESTful API is listening on ${host}:${port}${API_URL ? ` (${API_URL})` : ''}`,
+	);
+	return app;
+}
+
+// Only run when executed directly (tests import this module without booting).
+if (require.main === module) {
+	bootstrap();
+}
