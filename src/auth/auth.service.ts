@@ -1,8 +1,9 @@
 // ========== Auth Service
 // import all modules
-import { Body, HttpStatus, Inject, Injectable, Request } from '@nestjs/common';
+import { Body, HttpStatus, Injectable, Request } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/sequelize';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { IJwtToken } from 'src/interfaces';
 import { ResponseService } from 'src/response/response.service';
@@ -15,7 +16,7 @@ export class AuthService {
 		private readonly responseService: ResponseService,
 		private readonly jwtService: JwtService,
 		private readonly configService: ConfigService,
-		@Inject('USERS_REPOSITORY') private readonly usersRepository: typeof User,
+		@InjectModel(User) private readonly usersRepository: typeof User,
 	) {}
 
 	public async register(@Request() req: Request, @Body() dto: RegisterDto) {
@@ -209,7 +210,7 @@ export class AuthService {
 		const secret: string = this.configService.get(
 			'JWT_ACCESS_TOKEN_SECRET_KEY',
 		);
-		const expiresIn: string = this.configService.get(
+		const expiresIn: JwtSignOptions['expiresIn'] = this.configService.get(
 			'JWT_ACCESS_TOKEN_EXPIRES_IN',
 		);
 
@@ -220,7 +221,7 @@ export class AuthService {
 		const secret: string = this.configService.get(
 			'JWT_REFRESH_TOKEN_SECRET_KEY',
 		);
-		const expiresIn: string = this.configService.get(
+		const expiresIn: JwtSignOptions['expiresIn'] = this.configService.get(
 			'JWT_REFRESH_TOKEN_EXPIRES_IN',
 		);
 
