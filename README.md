@@ -30,8 +30,49 @@ This is the RESTful API of the my personal website that's written in the Nest js
 - Run On Production
 
 	```bash
-	npm run start
+	npm run build
+	npm run start:prod
 	```
+
+The API reads its port from the `PORT` environment variable and always listens
+on `0.0.0.0`. When `PORT` is unset (or invalid), it falls back to `9000`.
+
+## API Documentation
+
+Interactive Swagger UI at [`/api-docs`](http://localhost:9000/api-docs) — the OpenAPI JSON lives at [`/api-docs-json`](http://localhost:9000/api-docs-json). With the default `PORT` (9000), that's http://localhost:9000/api-docs.
+
+Protected routes expect the JWT in an `x-access-token` header — in Swagger UI, click **Authorize** and paste the token from the login response.
+
+## Run With Docker Compose
+
+This starts MySQL 8 and the API together:
+
+```bash
+cp .env.example .env   # fill in DB_*, JWT and email settings
+docker compose up --build
+```
+
+- The database runs as the `db` service; `DB_HOST` is set to `db` and `DB_PORT`
+  to `3306` automatically, so those two values in `.env` are ignored in Docker.
+- MySQL data is stored in the `db_data` volume, so it survives restarts.
+- The API listens on `0.0.0.0:${PORT:-9000}` inside its container and is
+  published on host port `${PORT:-9000}`. With the defaults, open
+  http://localhost:9000.
+- To stop everything but keep the database data: `docker compose down`.
+
+### Database-only Compose stack
+
+If you develop the API outside Docker (`npm run start:dev`) and only want the
+database in Docker:
+
+```bash
+docker compose -f docker-compose.db.yml up -d
+```
+
+- MySQL is published on host port `${DB_PORT:-3306}` — set `DB_HOST=127.0.0.1`
+  (and `DB_PORT` if not 3306) in `.env` for the locally-running API.
+- It shares the same `db_data` volume as the full stack, so data is common to
+  both. Don't run the two stacks at the same time (same container name).
 
 ## Entity Relationship Diagram (ERD)
 

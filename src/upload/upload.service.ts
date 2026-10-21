@@ -1,14 +1,17 @@
 // ========= Upload Service
 // import all modules
-import { HttpStatus, Injectable, Request } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { join } from 'path';
-import { mkdirSync, existsSync } from 'fs';
-import { IRequestWithUpload, IUploadFileResponse } from 'src/interfaces';
+import { mkdirSync, existsSync, writeFileSync } from 'fs';
+import { IUploadFileResponse } from 'src/interfaces';
+
+const MAX_FILE_SIZE = 3000000; // bytes
+const UPLOADS_DIR = join(__dirname, '../../uploads');
 
 @Injectable()
 export class UploadService {
-	public uploadImage(@Request() req: IRequestWithUpload): IUploadFileResponse {
-		if (!req.files) {
+	public uploadImage(file?: Express.Multer.File): IUploadFileResponse {
+		if (!file) {
 			return {
 				status: HttpStatus.BAD_REQUEST,
 				success: false,
@@ -16,41 +19,15 @@ export class UploadService {
 			};
 		}
 
-		const img = req.files.img;
-		const extValid = /jpg|jpeg|png/;
-		const checkMimeType = extValid.test(img.mimetype);
-		const checkExtension = extValid.test(img.name);
-
-		if (!checkMimeType && !checkExtension) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				success: false,
-				message: "You can't upload file beside an image",
-			};
+		const invalid = this.isInvalidFile(file, /jpg|jpeg|png/, 'image');
+		if (invalid) {
+			return invalid;
 		}
 
-		if (img.size > 3000000) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				success: false,
-				message: 'The image file is too large',
-			};
-		}
+		const fileName = this.buildFileName(file.originalname);
 
-		let fileName = img.name.split('.')[0].toLowerCase();
-		const ext = img.name.split('.').pop().toLowerCase();
-		fileName += '-';
-		fileName += String(Date.now());
-		fileName += '.';
-		fileName += ext;
-
-		const isUploadFolderExists = existsSync(join(__dirname, '../../uploads'));
-
-		if (!isUploadFolderExists) {
-			mkdirSync(join(__dirname, '../../uploads'));
-		}
-
-		img.mv(join(__dirname, '../../uploads/' + fileName));
+		this.ensureUploadsDir();
+		writeFileSync(join(UPLOADS_DIR, fileName), file.buffer);
 
 		return {
 			status: HttpStatus.OK,
@@ -59,55 +36,50 @@ export class UploadService {
 		};
 	}
 
-	public uploadPdf(@Request() req: IRequestWithUpload): IUploadFileResponse {
-		if (!req.files) {
-			return {
-				status: HttpStatus.BAD_REQUEST,
-				success: false,
-				message: 'The pdf is required',
-			};
-		}
-
-		const cv = req.files.cv;
-		const extValid = /pdf/;
-		const checkMimeType = extValid.test(cv.mimetype);
-		const checkExtension = extValid.test(cv.name);
+	/** Shared validation: image/pdf extension or mime type, and the size limit. */
+	private isInvalidFile(
+		file: Express.Multer.File,
+		extValid: RegExp,
+		kind: string,
+	): IUploadFileResponse | undefined {
+		const checkMimeType = extValid.test(file.mimetype);
+		const checkExtension = extValid.test(file.originalname);
 
 		if (!checkMimeType && !checkExtension) {
 			return {
 				status: HttpStatus.BAD_REQUEST,
 				success: false,
-				message: "You can't upload file beside an pdf",
+				message: `You can't upload file beside an ${kind}`,
 			};
 		}
 
-		if (cv.size > 3000000) {
+		if (file.size > MAX_FILE_SIZE) {
 			return {
 				status: HttpStatus.BAD_REQUEST,
 				success: false,
-				message: 'The pdf file is too large',
+				message: `The ${kind} file is too large`,
 			};
 		}
 
-		let fileName = cv.name.split('.')[0].toLowerCase();
-		const ext = cv.name.split('.').pop().toLowerCase();
-		fileName += '-';
-		fileName += String(Date.now());
-		fileName += '.';
-		fileName += ext;
+		return undefined;
+	}
 
-		const isUploadFolderExists = existsSync(join(__dirname, '../../uploads'));
+	/**
+	 * `<base>-<timestamp>.<ext>` — the base is sanitized to a safe file name
+	 * (client-provided names could otherwise contain path characters).
+	 */
+	private buildFileName(originalname: string): string {
+		const parts = originalname.split('.');
+		const base =
+			(parts.shift() ?? 'file').toLowerCase().replace(/[^a-z0-9_-]+/g, '-') ||
+			'file';
+		const ext = parts.pop()?.toLowerCase() ?? 'bin';
+		return `${base}-${Date.now()}.${ext}`;
+	}
 
-		if (!isUploadFolderExists) {
-			mkdirSync(join(__dirname, '../../uploads'));
+	private ensureUploadsDir(): void {
+		if (!existsSync(UPLOADS_DIR)) {
+			mkdirSync(UPLOADS_DIR, { recursive: true });
 		}
-
-		cv.mv(join(__dirname, '../../uploads/' + fileName));
-
-		return {
-			status: HttpStatus.OK,
-			success: true,
-			cv: fileName,
-		};
 	}
 }

@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
 				throw this.responseService.response({
 					status: HttpStatus.FORBIDDEN,
 					success: false,
-					message: err.message,
+					message: err instanceof Error ? err.message : 'Access denied',
 				});
 			}
 		}
