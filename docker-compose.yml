@@ -1,5 +1,6 @@
 services:
-  db:
+  personal-website-db:
+    container_name: personal-website-db
     image: mysql:8.4
     restart: unless-stopped
     environment:
@@ -8,18 +9,23 @@ services:
       MYSQL_USER: ${DB_USER:-api}
       MYSQL_PASSWORD: ${DB_PASSWORD:-db-password}
     volumes:
-      - db_data:/var/lib/mysql
+      - personal_website_db_data:/var/lib/mysql
+    networks:
+     - personal_website_network
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1"]
       interval: 5s
       timeout: 3s
       retries: 20
 
-  api:
+  personal-website-api:
+    container_name: personal-website-api
     build: .
     restart: unless-stopped
+    networks:
+     - personal_website_network
     depends_on:
-      db:
+      personal-website-db:
         condition: service_healthy
     env_file:
       - path: .env
@@ -27,11 +33,17 @@ services:
     environment:
       # The app reads PORT (default 9000) and listens on 0.0.0.0.
       PORT: ${PORT:-9000}
-      # Inside the compose network the database is reachable as "db".
-      DB_HOST: db
+      # Inside the compose network the database is reachable by its service name.
+      DB_HOST: personal-website-db
       DB_PORT: 3306
     ports:
       - "${PORT:-9000}:${PORT:-9000}"
 
 volumes:
-  db_data:
+  personal_website_db_data:
+   name: personal_website_db_data
+
+networks:
+  personal_website_network:
+   name: personal_website_network
+   driver: bridge
