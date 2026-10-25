@@ -1,8 +1,10 @@
 // ========== CORS integration test: only whitelisted origins get CORS headers.
 // The real Sequelize provider is overridden because there is no MySQL here.
 import { INestApplication } from '@nestjs/common';
+import { getModelToken } from '@nestjs/sequelize';
 import { Test } from '@nestjs/testing';
 import { Sequelize } from 'sequelize-typescript';
+import { Profile } from './profile/profile.entity';
 import { AppModule } from './app.module';
 import constants from './constants';
 import { configureApp } from './main';
@@ -21,6 +23,8 @@ describe('CORS whitelist (integration)', () => {
 		const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
 			.overrideProvider(Sequelize)
 			.useValue({ define: jest.fn(), authenticate: jest.fn() })
+			.overrideProvider(getModelToken(Profile))
+			.useValue({ sync: jest.fn() })
 			.compile();
 		app = configureApp(moduleRef.createNestApplication());
 		await app.listen(PORT, '127.0.0.1');

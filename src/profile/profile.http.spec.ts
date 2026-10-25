@@ -17,6 +17,9 @@ const profile = {
 	facebookUrl: '',
 	twitterUrl: 'https://twitter.com/Mathius87248424',
 	youtubeUrl: 'https://www.youtube.com/@mathius',
+	name: 'Mathius K',
+	email: 'me@example.com',
+	phone: '+819012345678',
 };
 
 describe('/api/v1/profile (integration)', () => {
@@ -33,6 +36,7 @@ describe('/api/v1/profile (integration)', () => {
 				: null,
 		),
 		create: jest.fn(async (values: object) => (stored = { ...values })),
+		sync: jest.fn(),
 	};
 
 	beforeAll(async () => {
@@ -88,6 +92,24 @@ describe('/api/v1/profile (integration)', () => {
 			status: 400,
 			success: false,
 			message: 'Each skill can only be added once',
+		});
+		expect(profileModel.create).not.toHaveBeenCalled();
+	});
+
+	it('runs the alter sync for the profile table on start', () => {
+		expect(profileModel.sync).toHaveBeenCalledWith({ alter: true });
+	});
+
+	it('PATCH rejects a phone number that is not real', async () => {
+		const response = await patch(
+			{ ...profile, phone: '+62123456' },
+			{ 'x-access-token': token() },
+		);
+		expect(response.status).toBe(400);
+		expect(await response.json()).toEqual({
+			status: 400,
+			success: false,
+			message: "The phone number doesn't look right",
 		});
 		expect(profileModel.create).not.toHaveBeenCalled();
 	});

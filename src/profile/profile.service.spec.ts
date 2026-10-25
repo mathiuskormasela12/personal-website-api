@@ -10,6 +10,7 @@ const req: any = { url: 'http://localhost:9000/api/v1/profile' };
 const profileRepository = {
 	findOne: jest.fn(),
 	create: jest.fn(),
+	sync: jest.fn(),
 } as unknown as typeof Profile;
 
 const profile = {
@@ -18,6 +19,9 @@ const profile = {
 	facebookUrl: '',
 	twitterUrl: 'https://twitter.com/Mathius87248424',
 	youtubeUrl: 'https://www.youtube.com/@mathius',
+	name: 'Mathius K',
+	email: 'me@example.com',
+	phone: '+819012345678',
 };
 
 const buildService = () =>
@@ -37,6 +41,7 @@ async function httpBody(promise: Promise<unknown>) {
 beforeEach(() => {
 	(profileRepository.findOne as jest.Mock).mockReset();
 	(profileRepository.create as jest.Mock).mockReset();
+	(profileRepository.sync as jest.Mock).mockReset();
 });
 
 describe('PROFILE_DEFAULTS', () => {
@@ -59,12 +64,50 @@ describe('PROFILE_DEFAULTS', () => {
 			twitterUrl: 'https://twitter.com/Mathius87248424',
 			youtubeUrl:
 				'https://www.youtube.com/channel/UC5eUSF2W_vAkYA6wdilJjOw/videos',
+			name: 'Mathius',
+			email: 'mathiuskormasela12@gmail.com',
+			phone: '+628111906204',
 		});
 	});
 });
 
 describe('ProfileService', () => {
+	it('adds new profile columns to the existing table when the API starts', async () => {
+		await buildService().onModuleInit();
+		expect(profileRepository.sync).toHaveBeenCalledWith({ alter: true });
+	});
+
 	describe('getProfile', () => {
+		it('fills columns that an older saved row does not have yet with the defaults', async () => {
+			(profileRepository.findOne as jest.Mock).mockResolvedValue({
+				...profile,
+				name: null,
+				email: null,
+				phone: null,
+			});
+
+			const body: any = await httpBody(buildService().getProfile(req));
+
+			expect(body.results).toEqual({
+				...profile,
+				name: PROFILE_DEFAULTS.name,
+				email: PROFILE_DEFAULTS.email,
+				phone: PROFILE_DEFAULTS.phone,
+			});
+		});
+
+		it('keeps an email or phone that was saved empty on purpose', async () => {
+			(profileRepository.findOne as jest.Mock).mockResolvedValue({
+				...profile,
+				email: '',
+				phone: '',
+			});
+
+			const body: any = await httpBody(buildService().getProfile(req));
+
+			expect(body.results).toMatchObject({ email: '', phone: '' });
+		});
+
 		it('returns the defaults while nothing was saved yet', async () => {
 			(profileRepository.findOne as jest.Mock).mockResolvedValue(null);
 

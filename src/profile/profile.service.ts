@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, Request } from '@nestjs/common';
+import { HttpStatus, Injectable, OnModuleInit, Request } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { ResponseService } from 'src/response/response.service';
 import { UpdateProfileDto } from './dto';
@@ -10,12 +10,16 @@ import {
 import { Profile } from './profile.entity';
 
 @Injectable()
-export class ProfileService {
+export class ProfileService implements OnModuleInit {
 	constructor(
 		private readonly responseService: ResponseService,
 		@InjectModel(Profile)
 		private readonly profileRepository: typeof Profile,
 	) {}
+
+	public async onModuleInit() {
+		await this.profileRepository.sync({ alter: true });
+	}
 
 	public async getProfile(@Request() req: Request) {
 		try {
@@ -61,7 +65,10 @@ export class ProfileService {
 		return PROFILE_FIELDS.reduce(
 			(data, field) => ({
 				...data,
-				[field]: field === 'skills' ? [...source.skills] : source[field],
+				[field]:
+					field === 'skills'
+						? [...source.skills]
+						: (source[field] ?? PROFILE_DEFAULTS[field]),
 			}),
 			{} as ProfileData,
 		);

@@ -4,9 +4,12 @@ import {
 	ArrayMinSize,
 	ArrayUnique,
 	IsArray,
+	IsEmail,
 	IsNotEmpty,
+	IsPhoneNumber,
 	IsString,
 	IsUrl,
+	Matches,
 	MaxLength,
 	ValidateIf,
 } from 'class-validator';
@@ -62,4 +65,28 @@ export class UpdateProfileDto {
 
 	@SocialLink('Youtube')
 	youtubeUrl: string;
+
+	@Transform(trimText)
+	@MaxLength(30, { message: 'Your name is too long (max 30)' })
+	@IsNotEmpty({ message: "Your name can't be empty" })
+	@IsString({ message: 'Your name should be a text' })
+	name: string;
+
+	@Transform(trimText)
+	@ValidateIf((_, value) => value !== '')
+	@MaxLength(255, { message: 'The email is too long (max 255)' })
+	@IsEmail({}, { message: "The email doesn't look right" })
+	@IsString({ message: 'The email should be a text' })
+	email: string;
+
+	@Transform(trimText)
+	@ValidateIf((_, value) => value !== '')
+	@IsPhoneNumber(undefined, {
+		message: "The phone number doesn't look right",
+	})
+	@Matches(/^\+[1-9]\d{5,14}$/, {
+		message: 'The phone number should start with + and the country code',
+	})
+	@IsString({ message: 'The phone number should be a text' })
+	phone: string;
 }

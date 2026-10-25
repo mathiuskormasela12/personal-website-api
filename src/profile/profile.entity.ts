@@ -25,6 +25,15 @@ export class Profile extends Model<ProfileData, ProfileData> {
 	@Column
 	youtubeUrl: string;
 
+	@Column
+	name: string;
+
+	@Column
+	email: string;
+
+	@Column
+	phone: string;
+
 	@CreatedAt
 	createdAt: Date;
 

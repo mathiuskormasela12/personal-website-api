@@ -8,6 +8,9 @@ const valid = {
 	facebookUrl: 'https://www.facebook.com/mathiuskormasela/',
 	twitterUrl: 'https://twitter.com/Mathius87248424',
 	youtubeUrl: 'https://www.youtube.com/channel/UC5eUSF2W_vAkYA6wdilJjOw',
+	name: 'Mathius',
+	email: 'mathiuskormasela12@gmail.com',
+	phone: '+628111906204',
 };
 
 const errorsFor = async (body: object) => {
@@ -41,6 +44,38 @@ describe('UpdateProfileDto', () => {
 			await expect(errorsFor({ ...valid, [field]: '' })).resolves.toEqual([]);
 		},
 	);
+
+	it('trims the name, the email and the phone', () => {
+		const dto = plainToInstance(UpdateProfileDto, {
+			...valid,
+			name: '  Mathius ',
+			email: ' me@example.com ',
+			phone: ' +819012345678 ',
+		});
+		expect(dto.name).toBe('Mathius');
+		expect(dto.email).toBe('me@example.com');
+		expect(dto.phone).toBe('+819012345678');
+	});
+
+	it.each(['email', 'phone'])(
+		'allows an empty %s so it can be hidden',
+		async (field) => {
+			await expect(errorsFor({ ...valid, [field]: '' })).resolves.toEqual([]);
+		},
+	);
+
+	it.each(['+819012345678', '+6591234567', '+12025550123'])(
+		'accepts the real phone number %s',
+		async (phone) => {
+			await expect(errorsFor({ ...valid, phone })).resolves.toEqual([]);
+		},
+	);
+
+	it('accepts a name of exactly 30 characters', async () => {
+		await expect(
+			errorsFor({ ...valid, name: 'x'.repeat(30) }),
+		).resolves.toEqual([]);
+	});
 
 	it('accepts exactly 24 skills of 30 characters', async () => {
 		const skills = Array.from({ length: 24 }, (_, i) => `${i}`.padEnd(30, 'x'));
@@ -76,6 +111,28 @@ describe('UpdateProfileDto', () => {
 			'The Twitter link should be a http(s) URL',
 		],
 		['youtubeUrl', 'not a url', 'The Youtube link should be a http(s) URL'],
+		['name', '   ', "Your name can't be empty"],
+		['name', 'x'.repeat(31), 'Your name is too long (max 30)'],
+		['name', 7, 'Your name should be a text'],
+		['email', 'mathius@gmail', "The email doesn't look right"],
+		['email', 'mathius gmail.com', "The email doesn't look right"],
+		[
+			'email',
+			`${'a'.repeat(60)}@${'b'.repeat(60)}.${'c'.repeat(60)}.${'d'.repeat(60)}.${'e'.repeat(20)}.com`,
+			'The email is too long (max 255)',
+		],
+		[
+			'phone',
+			'08111906204',
+			'The phone number should start with + and the country code',
+		],
+		[
+			'phone',
+			'+62 811 1906 204',
+			'The phone number should start with + and the country code',
+		],
+		['phone', '+62123456', "The phone number doesn't look right"],
+		['phone', '+11234567890', "The phone number doesn't look right"],
 		[
 			'youtubeUrl',
 			`https://youtube.com/${'x'.repeat(236)}`,
