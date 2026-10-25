@@ -8,9 +8,11 @@ import constants from './constants';
 import { configureApp } from './main';
 
 const PORT = 9148;
-const LAN_FRONTEND = 'http://192.168.8.4:9001';
-// Replaced by :9001, must no longer be allowed.
-const OLD_LAN_FRONTEND = 'http://192.168.8.4:9000';
+const LAN_FRONTEND = 'http://192.168.8.5:3000';
+const OLD_LAN_FRONTENDS = [
+	'http://192.168.8.4:9000',
+	'http://192.168.8.4:9001',
+];
 
 describe('CORS whitelist (integration)', () => {
 	let app: INestApplication;
@@ -37,9 +39,11 @@ describe('CORS whitelist (integration)', () => {
 			},
 		});
 
-	it('whitelists the LAN frontend origin, not the old one', () => {
+	it('whitelists the LAN frontend origin, not the old ones', () => {
 		expect(constants.WHITELIST).toContain(LAN_FRONTEND);
-		expect(constants.WHITELIST).not.toContain(OLD_LAN_FRONTEND);
+		OLD_LAN_FRONTENDS.forEach((origin) =>
+			expect(constants.WHITELIST).not.toContain(origin),
+		);
 	});
 
 	it.each([LAN_FRONTEND, ...constants.WHITELIST])(
@@ -51,7 +55,7 @@ describe('CORS whitelist (integration)', () => {
 		},
 	);
 
-	it.each(['http://192.168.8.99:9000', OLD_LAN_FRONTEND])(
+	it.each(['http://192.168.8.99:9000', ...OLD_LAN_FRONTENDS])(
 		'does not allow %s',
 		async (origin) => {
 			const response = await preflight(origin);
