@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { getModelToken } from '@nestjs/sequelize';
 import { Test } from '@nestjs/testing';
 import { Sequelize } from 'sequelize-typescript';
+import { Profile } from '../profile/profile.entity';
 import { AppModule } from '../app.module';
 import { configureApp } from '../main';
 import { HERO_DEFAULTS } from './hero.defaults';
@@ -41,6 +42,8 @@ describe('/api/v1/hero (integration)', () => {
 		const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
 			.overrideProvider(Sequelize)
 			.useValue({ define: jest.fn(), authenticate: jest.fn() })
+			.overrideProvider(getModelToken(Profile))
+			.useValue({ sync: jest.fn() })
 			.overrideProvider(getModelToken(Hero))
 			.useValue(heroModel)
 			.compile();
