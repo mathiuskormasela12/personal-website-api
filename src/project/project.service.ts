@@ -3,6 +3,7 @@
 import {
 	Body,
 	Injectable,
+	Logger,
 	Request,
 	HttpStatus,
 	Param,
@@ -23,6 +24,8 @@ import { Project } from './project.entity';
 
 @Injectable()
 export class ProjectService {
+	private readonly logger = new Logger(ProjectService.name);
+
 	constructor(
 		private readonly responseService: ResponseService,
 		private readonly uploadService: UploadService,
@@ -33,6 +36,22 @@ export class ProjectService {
 		@InjectModel(Technology)
 		private readonly technologiesRepository: typeof Technology,
 	) {}
+
+	private removeImageFile(fileName: string | null): void {
+		const filePath = join(__dirname, '../../uploads/' + fileName);
+
+		if (!fileName || !existsSync(filePath)) {
+			return;
+		}
+
+		try {
+			unlinkSync(filePath);
+		} catch (err) {
+			this.logger.warn(
+				`Could not remove the old image ${fileName}: ${String(err)}`,
+			);
+		}
+	}
 
 	public async createProject(
 		@Request() req: IRequestWithUploadAndAppLocals,
@@ -314,8 +333,6 @@ export class ProjectService {
 								where: { projectId: id },
 							});
 
-							unlinkSync(join(__dirname, '../../uploads/' + project.img));
-
 							const newTechnologies = dto.technologies
 								.split(',')
 								.map((item) => ({
@@ -327,6 +344,7 @@ export class ProjectService {
 								await this.technologiesService.createTechnologies(
 									newTechnologies,
 								);
+								this.removeImageFile(project.img);
 								throw this.responseService.responseGenerator(
 									req,
 									HttpStatus.OK,
