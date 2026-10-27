@@ -38,8 +38,15 @@ services:
       DB_PORT: 3306
     ports:
       - "${PORT:-9000}:${PORT:-9000}"
+    volumes:
+      - type: volume
+        source: personal_website_uploads
+        target: /app/uploads
+        read_only: false
 
 volumes:
+  personal_website_uploads:
+   name: personal_website_uploads
   personal_website_db_data:
    name: personal_website_db_data
 

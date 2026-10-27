@@ -28,6 +28,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules/swagger-ui-dist/ ./node_modules/swagger-ui-dist/
 COPY --from=build /app/node_modules/@nestjs/swagger/dist/swagger-ui/constants.js ./node_modules/@nestjs/swagger/dist/swagger-ui/constants.js
 
+RUN mkdir -p /app/uploads && chown node:node /app/uploads
 USER node
 EXPOSE 9000
 CMD ["node", "dist/main.js"]
