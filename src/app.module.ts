@@ -18,6 +18,7 @@ import { UploadModule } from './upload/upload.module';
 import { NodemailerModule } from './nodemailer/nodemailer.module';
 import { HeroModule } from './hero/hero.module';
 import { ProfileModule } from './profile/profile.module';
+import { ExperienceModule } from './experience/experience.module';
 
 @Module({
 	imports: [
@@ -62,6 +63,7 @@ import { ProfileModule } from './profile/profile.module';
 		ProjectModule,
 		HeroModule,
 		ProfileModule,
+		ExperienceModule,
 		TechnologiesModule,
 		UploadModule,
 		NodemailerModule,
