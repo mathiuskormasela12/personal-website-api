@@ -12,7 +12,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import 'dotenv/config';
-import constants from './constants';
+import { parseCorsWhitelist } from './cors/cors.origins';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
@@ -82,7 +82,7 @@ export function configureApp(app: INestApplication): INestApplication {
 	app.use(morgan('dev'));
 
 	app.enableCors({
-		origin: constants.WHITELIST,
+		origin: parseCorsWhitelist(process.env.CORS_WHITELIST),
 	});
 
 	app.useGlobalPipes(

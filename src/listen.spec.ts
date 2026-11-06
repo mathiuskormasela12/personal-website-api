@@ -7,6 +7,8 @@ import { configureApp, getListenTarget, setupSwagger } from './main';
 import { AppModule } from './app.module';
 import { Sequelize } from 'sequelize-typescript';
 import { Profile } from './profile/profile.entity';
+import { Experience } from './experience/experience.entity';
+import { experienceModelStub } from './test/stubs';
 
 describe('bootstrap (integration)', () => {
 	it('listens on 0.0.0.0 at the PORT from the environment', async () => {
@@ -15,6 +17,8 @@ describe('bootstrap (integration)', () => {
 			.useValue({ define: jest.fn(), authenticate: jest.fn() })
 			.overrideProvider(getModelToken(Profile))
 			.useValue({ sync: jest.fn() })
+			.overrideProvider(getModelToken(Experience))
+			.useValue(experienceModelStub())
 			.compile();
 
 		const app = configureApp(moduleRef.createNestApplication());

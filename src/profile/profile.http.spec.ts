@@ -7,6 +7,8 @@ import { AppModule } from '../app.module';
 import { configureApp } from '../main';
 import { PROFILE_DEFAULTS } from './profile.defaults';
 import { Profile } from './profile.entity';
+import { Experience } from '../experience/experience.entity';
+import { experienceModelStub } from '../test/stubs';
 
 const PORT = 9150;
 const url = `http://127.0.0.1:${PORT}/api/v1/profile`;
@@ -45,6 +47,8 @@ describe('/api/v1/profile (integration)', () => {
 			.useValue({ define: jest.fn(), authenticate: jest.fn() })
 			.overrideProvider(getModelToken(Profile))
 			.useValue(profileModel)
+			.overrideProvider(getModelToken(Experience))
+			.useValue(experienceModelStub())
 			.compile();
 		app = configureApp(moduleRef.createNestApplication());
 		await app.listen(PORT, '127.0.0.1');

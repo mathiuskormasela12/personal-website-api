@@ -20,7 +20,7 @@ describe('envValidationSchema', () => {
 	it('accepts the required variables', () => {
 		const { error, value } = validate({ ...requiredVars });
 		expect(error).toBeUndefined();
-		expect(value.DB_PORT).toBe(3306); // default applied
+		expect(value.DB_PORT).toBe(3306);
 	});
 
 	it('accepts optional mailer and URL variables', () => {
@@ -32,6 +32,36 @@ describe('envValidationSchema', () => {
 			EMAIL_PORT: 465,
 		});
 		expect(error).toBeUndefined();
+	});
+
+	it('accepts a CORS whitelist with several origins', () => {
+		const { error } = validate({
+			...requiredVars,
+			CORS_WHITELIST: 'http://192.168.8.5:3000,https://mathiuskormasela.com',
+		});
+		expect(error).toBeUndefined();
+	});
+
+	it('accepts an empty CORS whitelist, so the default is used', () => {
+		const { error } = validate({ ...requiredVars, CORS_WHITELIST: '' });
+		expect(error).toBeUndefined();
+	});
+
+	it('accepts a CORS whitelist that is not set', () => {
+		const { error } = validate({ ...requiredVars });
+		expect(error).toBeUndefined();
+	});
+
+	it.each([
+		'http://192.168.8.5:3000/',
+		'http://192.168.8.5:3000/app',
+		'ftp://192.168.8.5',
+		'not a url',
+		'http://192.168.8.5:3000,not a url',
+	])('rejects the bad CORS whitelist value "%s"', (origins) => {
+		const { error } = validate({ ...requiredVars, CORS_WHITELIST: origins });
+		expect(error).toBeDefined();
+		expect(error.details.map((d) => d.path[0])).toContain('CORS_WHITELIST');
 	});
 
 	it('rejects missing required variables and reports all of them', () => {

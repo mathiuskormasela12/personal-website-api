@@ -1,6 +1,7 @@
 // ========== Environment validation schema
 // Fails fast at boot when a required variable is missing or malformed.
 import Joi from 'joi';
+import { isCorsOrigin, parseCorsWhitelist } from '../cors/cors.origins';
 
 export const envValidationSchema = Joi.object({
 	// API
@@ -8,6 +9,14 @@ export const envValidationSchema = Joi.object({
 	APP_URL: Joi.string().uri().optional(),
 	API_URL: Joi.string().uri().optional(),
 	WEB_HOSTNAME: Joi.string().uri().optional(),
+	CORS_WHITELIST: Joi.string()
+		.allow('')
+		.optional()
+		.custom((value, helpers) =>
+			parseCorsWhitelist(value).every(isCorsOrigin)
+				? value
+				: helpers.error('any.invalid'),
+		),
 
 	// Database (MySQL) — required, the app cannot run without it
 	DB_HOST: Joi.string().required(),
